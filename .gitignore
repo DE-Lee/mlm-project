@@ -1,0 +1,31 @@
+# Build outputs
+**/build/
+**/install/
+**/log/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ROS2
+*.bag
+*.db3
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.bak

@@ -1,0 +1,80 @@
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import PushRosNamespace
+from launch import LaunchDescription
+from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction, OpaqueFunction, TimerAction
+
+def launch_setup(context):
+    compiled = os.environ.get('need_compile', 'False')
+    sim = LaunchConfiguration('sim', default='false').perform(context)
+    master_name = LaunchConfiguration('master_name', default=os.environ.get('MASTER', '/')).perform(context)
+    robot_name = LaunchConfiguration('robot_name', default=os.environ.get('HOST', '/')).perform(context)
+
+    sim_arg = DeclareLaunchArgument('sim', default_value=sim)
+    master_name_arg = DeclareLaunchArgument('master_name', default_value=master_name)
+    robot_name_arg = DeclareLaunchArgument('robot_name', default_value=robot_name)
+
+    frame_prefix = '' if robot_name == '/' else f'{robot_name}/'
+    topic_prefix = '' if robot_name == '/' else f'/{robot_name}'
+    use_sim_time = 'true' if sim == 'true' else 'false'
+    map_frame = f'{frame_prefix}map'
+    odom_frame = f'{frame_prefix}odom'
+    base_frame = f'{frame_prefix}base_footprint'
+    depth_camera_topic = f'{topic_prefix}/ascamera/camera_publisher/depth0/image_raw'
+    depth_camera_info = f'{topic_prefix}/ascamera/camera_publisher/rgb0/camera_info'
+    rgb_camera_topic = f'{topic_prefix}/ascamera/camera_publisher/rgb0/image'
+    odom_topic = f'{topic_prefix}/odom'
+    scan_topic = f'{topic_prefix}/scan_raw'  
+
+    if compiled == 'True':
+        slam_package_path = get_package_share_directory('slam')
+    else:
+        slam_package_path = '/home/lee/ros2_ws/src/slam'
+
+    base_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(slam_package_path, 'launch/include/robot.launch.py')),
+        launch_arguments={
+            'sim': sim,
+            'master_name': master_name,
+            'robot_name': robot_name,
+            'action_name': 'horizontal',
+        }.items(),
+    )    
+    
+
+    rtabmap_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(slam_package_path, 'launch/include/rtabmap.launch.py')),
+        launch_arguments={
+            'use_sim_time': use_sim_time, 
+        }.items(),
+    )
+    
+    bringup_launch = GroupAction(
+     actions=[
+         PushRosNamespace(robot_name),
+         base_launch,
+         TimerAction(
+             period=10.0, 
+             actions=[rtabmap_launch],
+         ),
+      ]
+    )
+
+    return [sim_arg, master_name_arg, robot_name_arg, bringup_launch]
+
+def generate_launch_description():
+    return LaunchDescription([
+        OpaqueFunction(function=launch_setup)
+    ])
+
+if __name__ == '__main__':
+    ld = generate_launch_description()
+
+    ls = LaunchService()
+    ls.include_launch_description(ld)
+    ls.run()
+
