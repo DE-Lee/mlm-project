@@ -91,7 +91,7 @@ export const ROBOTS: RobotConfig[] = [
 
 ```typescript
 export const MAP_CONFIG: MapConfig = {
-  image: '/maps/map.pgm',
+  image: '/maps/mlm_map.pgm',
   resolution: 0.05,        // 미터/픽셀
   origin: {
     x: -10,  // 맵 좌하단 X (맵 YAML과 동일하게)
