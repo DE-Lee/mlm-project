@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CycloneDDS xmlns="https://cdds.io/config">
+  <Domain>
+    <General>
+      <!-- WiFi 인터페이스 지정 (유선이면 eth0, 무선이면 wlan0) -->
+      <!-- 로봇 네트워크 인터페이스에 맞게 수정 필요 -->
+      <Interfaces>
+        <NetworkInterface name="wlan0"/>
+      </Interfaces>
+      <!-- Multicast는 SPDP(Simple Participant Discovery Protocol)만 허용 -->
+      <AllowMulticast>spdp</AllowMulticast>
+      <!-- 패킷 단편화 크기 (WiFi 최적화) -->
+      <FragmentSize>1280 B</FragmentSize>
+    </General>
+    <Discovery>
+      <ParticipantIndex>auto</ParticipantIndex>
+      <MaxAutoParticipantIndex>120</MaxAutoParticipantIndex>
+      <!-- Peer-to-Peer Unicast: PC IP 추가 -->
+      <Peers>
+        <Peer address="172.16.11.167"/>  <!-- PC IP 주소 -->
+      </Peers>
+    </Discovery>
+  </Domain>
+</CycloneDDS>

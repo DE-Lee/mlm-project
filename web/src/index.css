@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 기본 스타일 */
+body {
+  @apply bg-gray-900 text-white;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* 선택 방지 (맵 드래그 시) */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 캔버스 부드러운 렌더링 */
+canvas {
+  image-rendering: optimizeQuality;
+}
+
+/* 애니메이션 */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}

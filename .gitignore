@@ -1,0 +1,40 @@
+# ROS2 Build Artifacts
+**/build/
+**/install/
+**/log/
+**/.colcon/
+
+# Node.js
+**/node_modules/
+**/dist/
+**/.vite/
+**/package-lock.json
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.egg-info/
+**/.pytest_cache/
+
+# IDE
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+**/tmp/
+**/*.log
+**/*.tmp
+
+# Docker
+**/.dockerignore
+
+# ROS specific
+**/COLCON_IGNORE
