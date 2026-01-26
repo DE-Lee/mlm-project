@@ -29,7 +29,8 @@ setup(
             'joystick_control = peripherals.joystick_control:main',
             'tf_broadcaster_imu = peripherals.tf_broadcaster_imu:main',
             'teleop_key_control = peripherals.teleop_key_control:main',
-            'joystack2 = peripherals.joystack2:main',
+            # 'joystack2 = peripherals.joystack2:main',
+            'webcam_compressed_pub = peripherals.webcam_compressed_pub:main',
         ],
     },
 )

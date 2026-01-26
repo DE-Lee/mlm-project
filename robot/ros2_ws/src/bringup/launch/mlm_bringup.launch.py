@@ -9,15 +9,6 @@ from launch.actions import IncludeLaunchDescription, OpaqueFunction, LogInfo
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def launch_setup(context):
-    # CRITICAL: ROS_DOMAIN_ID 검증
-    domain_id = os.environ.get('ROS_DOMAIN_ID', None)
-    if domain_id != '3':
-        raise RuntimeError(
-            f"❌ ERROR: ROS_DOMAIN_ID must be 3 for multi-robot system!\n"
-            f"   Current: {domain_id if domain_id else 'NOT SET'}\n"
-            f"   Fix: export ROS_DOMAIN_ID=3"
-        )
-
     compiled = os.environ.get("need_compile", "False")
     use_global_tf = LaunchConfiguration("use_global_tf").perform(context)
     robot_namespace = LaunchConfiguration("robot_namespace").perform(context)
@@ -56,11 +47,10 @@ def launch_setup(context):
             os.path.join(peripherals_package_path, "launch/lidar.launch.py")),
     )
 
-    # rosbridge는 PC에서 실행 (로봇 자원 절약)
-    # rosbridge_websocket_launch = ExecuteProcess(
-    #         cmd=["ros2", "launch", "rosbridge_server", "rosbridge_websocket_launch.xml"],
-    #         output="screen"
-    #     )
+    rosbridge_websocket_launch = ExecuteProcess(
+            cmd=["ros2", "launch", "rosbridge_server", "rosbridge_websocket_launch.xml"],
+            output="screen"
+        )
 
     init_pose_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(controller_package_path, "launch/init_pose.launch.py")),
@@ -77,7 +67,7 @@ def launch_setup(context):
             controller_launch,
             usb_cam_launch,
             lidar_launch,
-            # rosbridge는 PC에서 실행
+            # rosbridge_websocket_launch,  # PC에서 실행
             init_pose_launch,
             ]
 

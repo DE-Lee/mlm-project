@@ -230,7 +230,7 @@ export const useManualControl = (namespace: string) => {
       if (!publisherRef.current) {
         publisherRef.current = new ROSLIB.Topic({
           ros,
-          name: `/${namespace}/cmd_vel`,
+          name: `/${namespace}/controller/cmd_vel`,
           messageType: 'geometry_msgs/Twist',
         });
       }

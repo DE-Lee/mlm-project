@@ -21,6 +21,10 @@ interface RobotStore {
   // 선택된 로봇
   selectedRobot: string | null;
   setSelectedRobot: (namespace: string | null) => void;
+
+  // 키보드 활성화 상태
+  keyboardEnabledRobots: Record<string, boolean>;
+  toggleKeyboardEnabled: (namespace: string) => void;
 }
 
 // 초기 로봇 상태 생성
@@ -119,4 +123,14 @@ export const useRobotStore = create<RobotStore>((set) => ({
   // 선택된 로봇
   selectedRobot: ROBOTS[0]?.namespace || null,
   setSelectedRobot: (namespace) => set({ selectedRobot: namespace }),
+
+  // 키보드 활성화 상태
+  keyboardEnabledRobots: {},
+  toggleKeyboardEnabled: (namespace) =>
+    set((state) => ({
+      keyboardEnabledRobots: {
+        ...state.keyboardEnabledRobots,
+        [namespace]: !state.keyboardEnabledRobots[namespace],
+      },
+    })),
 }));

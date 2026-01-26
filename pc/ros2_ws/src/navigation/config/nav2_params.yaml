@@ -250,30 +250,31 @@ controller_server:
       xy_goal_tolerance: 0.15
       yaw_goal_tolerance: 0.20
       stateful: True
+    # RegulatedPurePursuit - MentorPi A1 0.6 m/s 운용 기준
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 0.22
-      lookahead_dist: 0.40
-      min_lookahead_dist: 0.25
-      max_lookahead_dist: 0.55
+      desired_linear_vel: 0.5           # 0.22 → 0.5 (목표 속도, 최대 0.6의 83%)
+      lookahead_dist: 0.6               # 0.40 → 0.6 (고속 주행 시야 확대)
+      min_lookahead_dist: 0.3           # 0.25 → 0.3
+      max_lookahead_dist: 0.9           # 0.55 → 0.9
       lookahead_time: 1.5
-      rotate_to_heading_angular_vel: 0.8
+      rotate_to_heading_angular_vel: 1.0  # 0.8 → 1.0
       transform_tolerance: 0.1
       use_velocity_scaled_lookahead_dist: true
-      min_approach_linear_velocity: 0.05
-      approach_velocity_scaling_dist: 0.4
+      min_approach_linear_velocity: 0.08  # 0.05 → 0.08
+      approach_velocity_scaling_dist: 0.5 # 0.4 → 0.5
       use_collision_detection: true
       max_allowed_time_to_collision_up_to_carrot: 1.0
       use_regulated_linear_velocity_scaling: true
       use_fixed_curvature_lookahead: true
-      curvature_lookahead_dist: 0.25
+      curvature_lookahead_dist: 0.3     # 0.25 → 0.3
       use_cost_regulated_linear_velocity_scaling: true
       regulated_linear_scaling_min_radius: 0.25
-      regulated_linear_scaling_min_speed: 0.10
+      regulated_linear_scaling_min_speed: 0.15  # 0.10 → 0.15
       allow_reversing: false
       use_rotate_to_heading: false
       rotate_to_heading_min_angle: 0.785
-      max_angular_accel: 2.0
+      max_angular_accel: 2.5            # 2.0 → 2.5 (TEB와 일치)
       max_robot_pose_search_dist: 10.0
 
 planner_server:
@@ -342,10 +343,11 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.26, 0.0, 0.8]
-    min_velocity: [-0.15, 0.0, -0.8]
-    max_accel: [1.5, 0.0, 2.0]
-    max_decel: [-1.5, 0.0, -2.0]
+    # MentorPi A1 - 0.6 m/s 운용 기준 (TEB와 일관성)
+    max_velocity: [0.6, 0.0, 1.5]      # [0.26, 0.0, 0.8] → 확대
+    min_velocity: [-0.3, 0.0, -1.5]    # [-0.15, 0.0, -0.8] → 후진 확대
+    max_accel: [2.0, 0.0, 2.5]         # [1.5, 0.0, 2.0] → TEB와 일치
+    max_decel: [-2.0, 0.0, -2.5]       # [-1.5, 0.0, -2.0] → TEB와 일치
     odom_topic: odom
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]

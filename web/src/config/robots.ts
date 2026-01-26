@@ -84,6 +84,7 @@ export const TOPICS = {
 
   // 발행 (Publish)
   cmdVel: '/cmd_vel',
+  cmdVelManual: '/controller/cmd_vel',  // 수동 제어용 (Nav2와 충돌 방지)
   goalPose: '/goal_pose',
   initialPose: '/initialpose',
 };

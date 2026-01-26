@@ -63,6 +63,10 @@ def launch_setup(context):
     # TF remapping - global /tf 사용 (로봇이 global /tf로 발행)
     remappings = [('tf', '/tf'), ('tf_static', '/tf_static')]
 
+    # Costmap scan topic remapping - costmap 노드가 올바른 scan 토픽 구독하도록
+    scan_topic = f'/{robot_name}/scan_raw' if robot_name else '/scan_raw'
+    costmap_remappings = remappings + [('scan_raw', scan_topic)]
+
     # Lifecycle nodes
     lifecycle_nodes = ['map_server', 'amcl']
     navigation_lifecycle_nodes = ['controller_server', 'planner_server', 'behavior_server', 'bt_navigator']
@@ -97,7 +101,7 @@ def launch_setup(context):
             }],
             remappings=remappings,
         ),
-        # Controller Server
+        # Controller Server (local_costmap 포함)
         Node(
             package='nav2_controller',
             executable='controller_server',
@@ -109,9 +113,9 @@ def launch_setup(context):
                 'controller_plugins': ['FollowPath'],
                 'FollowPath.plugin': 'nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController',
             }],
-            remappings=remappings + [('cmd_vel', 'cmd_vel')],
+            remappings=costmap_remappings + [('cmd_vel', 'cmd_vel')],
         ),
-        # Planner Server
+        # Planner Server (global_costmap 포함)
         Node(
             package='nav2_planner',
             executable='planner_server',
@@ -119,7 +123,7 @@ def launch_setup(context):
             namespace=ns,
             output='screen',
             parameters=[configured_params, {'use_sim_time': False}],
-            remappings=remappings,
+            remappings=costmap_remappings,
         ),
         # Behavior Server
         Node(

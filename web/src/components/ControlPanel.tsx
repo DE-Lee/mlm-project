@@ -11,13 +11,13 @@ interface ControlPanelProps {
 export const ControlPanel = ({ namespace }: ControlPanelProps) => {
   const { publishVelocity, stop } = useManualControl(namespace);
   const { cancelNavigation } = useNavigation(namespace);
-  const { robots } = useRobotStore();
+  const { robots, keyboardEnabledRobots, toggleKeyboardEnabled } = useRobotStore();
   const { modes, setMode } = useControlModeStore();
 
   const robot = robots[namespace];
   const currentMode = modes[namespace] || ControlMode.IDLE;
+  const isKeyboardEnabled = keyboardEnabledRobots[namespace] || false;
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const [keyboardEnabled, setKeyboardEnabled] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // 속도 설정
@@ -43,11 +43,11 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
             break;
           case 'a':
           case 'ArrowLeft':
-            publishVelocity(0, maxAngular);
+            publishVelocity(0.05, maxAngular);  // 약간 전진하며 좌회전 (Ackermann)
             break;
           case 'd':
           case 'ArrowRight':
-            publishVelocity(0, -maxAngular);
+            publishVelocity(0.05, -maxAngular);  // 약간 전진하며 우회전 (Ackermann)
             break;
           case 'q':
             publishVelocity(maxLinear, maxAngular);
@@ -73,10 +73,10 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
     stop();
   }, [stop]);
 
-  // 전역 키보드 이벤트 (MANUAL 모드이고 키보드 활성화 시만)
+  // 전역 키보드 이벤트 (키보드 활성화 시만)
   useEffect(() => {
-    // MANUAL 모드가 아니거나 키보드 비활성화 시 무시
-    if (currentMode !== ControlMode.MANUAL || !keyboardEnabled) {
+    // 키보드 비활성화 시 무시
+    if (!isKeyboardEnabled) {
       return;
     }
 
@@ -104,7 +104,7 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
       window.removeEventListener('keyup', handleGlobalKeyUp);
     };
-  }, [handleKeyDown, handleKeyUp, stop, keyboardEnabled, currentMode, namespace]);
+  }, [handleKeyDown, handleKeyUp, stop, isKeyboardEnabled]);
 
   const buttonClass = (key: string) =>
     `w-12 h-12 rounded-lg font-bold text-lg transition-all ${
@@ -118,27 +118,16 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white font-semibold">Manual Control</h3>
 
-        {/* 키보드 활성화 토글 - Control Mode 통합 */}
+        {/* 키보드 활성화 토글 */}
         <button
-          onClick={() => {
-            if (!keyboardEnabled) {
-              // Manual 모드로 전환
-              cancelNavigation();  // Nav2 중단
-              setMode(namespace, ControlMode.MANUAL);
-              setKeyboardEnabled(true);
-            } else {
-              // Idle 모드로
-              setMode(namespace, ControlMode.IDLE);
-              setKeyboardEnabled(false);
-            }
-          }}
+          onClick={() => toggleKeyboardEnabled(namespace)}
           className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-            keyboardEnabled
+            isKeyboardEnabled
               ? 'bg-green-600 text-white'
               : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
           }`}
         >
-          {keyboardEnabled ? '⌨️ MANUAL' : '⌨️ 비활성화'}
+          {isKeyboardEnabled ? '⌨️ 키보드 ON' : '⌨️ 키보드 OFF'}
         </button>
       </div>
 
@@ -212,7 +201,7 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
 
       {/* 키보드 안내 */}
       <div className="text-xs text-gray-500 text-center mb-4">
-        {keyboardEnabled
+        {isKeyboardEnabled
           ? 'WASD / Arrow Keys to move, Space to stop'
           : '키보드 버튼을 활성화하여 조작하세요'}
       </div>

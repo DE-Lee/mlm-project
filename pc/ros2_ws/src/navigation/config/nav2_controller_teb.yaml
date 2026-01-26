@@ -37,24 +37,25 @@ controller_server:
       feasibility_check_no_poses: 5
       publish_feedback: False
           
-      # Robot
-      max_vel_x: 0.6
-      max_vel_theta: 3.0 
-      acc_lim_x: 2.5
-      acc_lim_theta: 3.2
-      min_turning_radius: 0.7854 
-      wheelbase: 0.145
+      # Robot - MentorPi A1 Ackermann 사양 기반
+      # 휠베이스: 0.145m, 휠직경: 0.067m, 조향한계: ±40°, 최소회전반경: 0.173m
+      max_vel_x: 0.6               # 하드웨어 한계 내 (JGB27 모터 기준 ~0.6-1.0 m/s)
+      max_vel_theta: 1.5           # 3.0 → 1.5 (Ackermann 조향 응답 고려)
+      acc_lim_x: 2.0               # 2.5 → 2.0 (부드러운 가속)
+      acc_lim_theta: 2.5           # 3.2 → 2.5 (조향 응답 완화)
+      min_turning_radius: 0.25     # 0.7854 → 0.25 (이론값 0.173m + 안전마진)
+      wheelbase: 0.145             # 실제 휠베이스 (코드 일치)
 
       footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
         type: "circular"
-        radius: 0.05 # for type "circular"
+        radius: 0.12               # 0.05 → 0.12 (로봇 크기 212x171mm 반영)
 
       # GoalTolerance
       free_goal_vel: False
           
-      # Obstacles
-      min_obstacle_dist: 0.25
-      inflation_dist: 0.6
+      # Obstacles - 0.6 m/s 주행 기준 안전거리
+      min_obstacle_dist: 0.15      # 0.25 → 0.15 (robot_radius 0.12 + 마진)
+      inflation_dist: 0.4          # 0.6 → 0.4 (costmap inflation과 일관성)
       include_costmap_obstacles: True
       costmap_obstacles_behind_robot_dist: 1.0
       obstacle_poses_affected: 15
