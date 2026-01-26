@@ -8,7 +8,6 @@ from launch import LaunchDescription, LaunchService
 from launch.substitutions import LaunchConfiguration
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
     enable_save = LaunchConfiguration('enable_save', default='true').perform(context)
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     map_frame = LaunchConfiguration('map_frame', default='map')
@@ -23,10 +22,8 @@ def launch_setup(context):
     base_frame_arg = DeclareLaunchArgument('base_frame', default_value=base_frame)
     scan_topic_arg = DeclareLaunchArgument('scan_topic', default_value=scan_topic)
 
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
 
     slam_params = RewrittenYaml(
         source_file=os.path.join(slam_package_path, 'config/slam.yaml'),

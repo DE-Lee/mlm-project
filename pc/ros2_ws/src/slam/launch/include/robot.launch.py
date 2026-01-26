@@ -8,7 +8,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, OpaqueFunction
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
     sim = LaunchConfiguration('sim', default='true').perform(context)
     use_joy = LaunchConfiguration('use_joy', default='true').perform(context)
     use_depth_camera = LaunchConfiguration('use_depth_camera', default='false')
@@ -45,12 +44,9 @@ def launch_setup(context):
     lidar_frame = '{}lidar_frame'.format(frame_prefix)
     imu_frame = '{}imu_link'.format(frame_prefix)
 
-    if compiled == 'True':
-        peripherals_package_path = get_package_share_directory('peripherals')
-        controller_package_path = get_package_share_directory('controller')
-    else:
-        peripherals_package_path = '/home/lee/ros2_ws/src/peripherals'
-        controller_package_path = '/home/lee/ros2_ws/src/driver/controller'
+    # 항상 패키지 경로 사용
+    peripherals_package_path = get_package_share_directory('peripherals')
+    controller_package_path = get_package_share_directory('controller')
 
     controller_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

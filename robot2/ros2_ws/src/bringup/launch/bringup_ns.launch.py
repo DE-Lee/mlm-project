@@ -3,7 +3,7 @@ Namespace가 적용된 bringup launch 파일
 TF는 global로 유지하여 multi-robot 환경에서도 동작
 
 사용법:
-ros2 launch bringup bringup_ns.launch.py robot_name:=robot1
+ros2 launch bringup bringup_ns.launch.py robot_name:=robot2
 """
 import os
 from ament_index_python.packages import get_package_share_directory
@@ -51,7 +51,7 @@ def launch_setup(context):
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument("robot_name", default_value="robot1"),
+        DeclareLaunchArgument("robot_name", default_value="robot2"),
         OpaqueFunction(function=launch_setup)
     ])
 

@@ -5,6 +5,15 @@ import { useRobotStore } from '@/stores/robotStore';
 import { getTopicName, TOPICS, MAP_CONFIG } from '@/config/robots';
 import { Odometry, PoseWithCovarianceStamped } from '@/types/ros';
 
+// 배터리 전압 → 퍼센트 변환 (2S LiPo 기준)
+const voltageToPercent = (millivolts: number): number => {
+  const voltage = millivolts / 1000;
+  const minVoltage = 6.0;  // 0% (3.0V x 2 cells)
+  const maxVoltage = 8.4;  // 100% (4.2V x 2 cells)
+  const percent = ((voltage - minVoltage) / (maxVoltage - minVoltage)) * 100;
+  return Math.max(0, Math.min(100, percent));
+};
+
 // Quaternion to Yaw 변환
 const quaternionToYaw = (q: { x: number; y: number; z: number; w: number }): number => {
   const siny_cosp = 2 * (q.w * q.z + q.x * q.y);
@@ -38,6 +47,7 @@ export const useRobotState = (namespace: string) => {
     rosConnected,
     updateRobotPose,
     updateRobotVelocity,
+    updateRobotBattery,
     setRobotConnected,
   } = useRobotStore();
 
@@ -154,6 +164,21 @@ export const useRobotState = (namespace: string) => {
     });
 
     subscribersRef.current.push(amclTopic);
+
+    // Battery 구독 (std_msgs/UInt16 - millivolts)
+    const batteryTopic = new ROSLIB.Topic({
+      ros,
+      name: getTopicName(namespace, TOPICS.battery),
+      messageType: 'std_msgs/UInt16',
+    });
+
+    batteryTopic.subscribe((message: unknown) => {
+      const msg = message as { data: number };
+      const percentage = voltageToPercent(msg.data);
+      updateRobotBattery(namespace, percentage);
+    });
+
+    subscribersRef.current.push(batteryTopic);
 
     // 연결 확인 타이머 (토픽이 오지 않으면 연결 끊김으로 처리)
     let lastMessageTime = Date.now();

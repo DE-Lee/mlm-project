@@ -5,12 +5,8 @@ from launch import LaunchDescription, LaunchService
 from launch.actions import DeclareLaunchArgument, OpaqueFunction, GroupAction, IncludeLaunchDescription, ExecuteProcess
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
-
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
 
     rviz_node = ExecuteProcess(
             cmd=['rviz2', 'rviz2', '-d', os.path.join(slam_package_path, 'rviz/rtabmap.rviz')],

@@ -41,40 +41,54 @@ export const useNavigation = (namespace: string) => {
       console.log(`[${namespace}] NavigateToPose action client created`);
     }
 
-    // Action server 가용성 주기적 체크
-    const checkServerInterval = setInterval(() => {
-      if (!actionClientRef.current) return;
+    // Action server 가용성 체크 - status 토픽 구독으로 확인
+    const statusTopic = new ROSLIB.Topic({
+      ros,
+      name: `/${namespace}/navigate_to_pose/_action/status`,
+      messageType: 'action_msgs/msg/GoalStatusArray',
+    });
 
-      // ROSLIB.ActionClient에 서버 체크 메서드가 없으므로
-      // Service를 통해 간접 체크 (action은 내부적으로 여러 service 사용)
-      const checkService = new ROSLIB.Service({
-        ros,
-        name: `/${namespace}/navigate_to_pose/_action/get_result`,
-        serviceType: 'nav2_msgs/action/NavigateToPose_GetResult',
-      });
+    let receivedStatus = false;
+    const statusCallback = () => {
+      if (!receivedStatus) {
+        receivedStatus = true;
+        setIsActionServerReady(true);
+        console.log(`[${namespace}] Navigation action server is ready ✓`);
+      }
+    };
+    statusTopic.subscribe(statusCallback);
 
-      // 서비스 존재 여부로 action server 준비 상태 판단
-      checkService.callService(
-        new ROSLIB.ServiceRequest({}),
-        () => {
-          // 성공 또는 실패 모두 서버가 존재한다는 의미
-          if (!isActionServerReady) {
+    // 3초 후에도 상태를 받지 못하면 bt_navigator 토픽으로 재확인
+    const fallbackTimeout = setTimeout(() => {
+      if (!receivedStatus) {
+        // bt_navigator가 active 상태면 action server도 준비된 것으로 간주
+        const btTopic = new ROSLIB.Topic({
+          ros,
+          name: `/${namespace}/bt_navigator/transition_event`,
+          messageType: 'lifecycle_msgs/msg/TransitionEvent',
+        });
+        btTopic.subscribe(() => {
+          if (!receivedStatus) {
+            receivedStatus = true;
             setIsActionServerReady(true);
-            console.log(`[${namespace}] Navigation action server is ready ✓`);
+            console.log(`[${namespace}] Navigation action server is ready (via bt_navigator) ✓`);
           }
-        },
-        () => {
-          // 서비스 호출 실패는 서버가 없다는 의미
-          if (isActionServerReady) {
-            setIsActionServerReady(false);
-            console.log(`[${namespace}] Navigation action server not ready...`);
+          btTopic.unsubscribe();
+        });
+
+        // 추가 3초 후에도 없으면 그냥 활성화 (이미 bt_navigator 노드가 존재하므로)
+        setTimeout(() => {
+          if (!receivedStatus) {
+            setIsActionServerReady(true);
+            console.log(`[${namespace}] Navigation action server assumed ready`);
           }
-        }
-      );
-    }, 2000); // 2초마다 체크
+        }, 3000);
+      }
+    }, 3000);
 
     return () => {
-      clearInterval(checkServerInterval);
+      statusTopic.unsubscribe();
+      clearTimeout(fallbackTimeout);
       if (currentGoalRef.current) {
         currentGoalRef.current.cancel();
         currentGoalRef.current = null;

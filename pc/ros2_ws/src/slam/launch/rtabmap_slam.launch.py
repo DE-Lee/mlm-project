@@ -7,7 +7,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction, OpaqueFunction, TimerAction
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
     sim = LaunchConfiguration('sim', default='false').perform(context)
     master_name = LaunchConfiguration('master_name', default=os.environ.get('MASTER', '/')).perform(context)
     robot_name = LaunchConfiguration('robot_name', default=os.environ.get('HOST', '/')).perform(context)
@@ -26,12 +25,10 @@ def launch_setup(context):
     depth_camera_info = f'{topic_prefix}/ascamera/camera_publisher/rgb0/camera_info'
     rgb_camera_topic = f'{topic_prefix}/ascamera/camera_publisher/rgb0/image'
     odom_topic = f'{topic_prefix}/odom'
-    scan_topic = f'{topic_prefix}/scan_raw'  
+    scan_topic = f'{topic_prefix}/scan_raw'
 
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
 
     base_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

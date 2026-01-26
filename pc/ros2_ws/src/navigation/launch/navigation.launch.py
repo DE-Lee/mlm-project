@@ -8,13 +8,9 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction, OpaqueFunction, TimerAction
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-        navigation_package_path = get_package_share_directory('navigation')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
-        navigation_package_path = '/home/lee/ros2_ws/src/navigation'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
+    navigation_package_path = get_package_share_directory('navigation')
 
     sim = LaunchConfiguration('sim', default='false').perform(context)
     map_name = LaunchConfiguration('map', default='map_01').perform(context)

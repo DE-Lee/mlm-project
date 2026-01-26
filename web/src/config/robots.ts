@@ -43,15 +43,15 @@ export const ROS_CONFIG = {
 // ============================================================
 
 export const MAP_CONFIG: MapConfig = {
-  image: '/maps/mlm_map.png',  // public/maps/mlm_map.png (PNG for browser compatibility)
-  resolution: 0.05,        // 5cm per pixel (mlm_map.yaml)
+  image: '/maps/mlm_slam.png',  // public/maps/mlm_slam.png (PNG for browser compatibility)
+  resolution: 0.05,        // 5cm per pixel (mlm_slam.yaml)
   origin: {
-    x: -35.075,   // 맵 좌하단 x 좌표 (meters) - mlm_map.yaml origin[0]
-    y: -25.65,    // 맵 좌하단 y 좌표 (meters) - mlm_map.yaml origin[1]
+    x: -17.4,     // 맵 좌하단 x 좌표 (meters) - mlm_slam.yaml origin[0]
+    y: -7.48,     // 맵 좌하단 y 좌표 (meters) - mlm_slam.yaml origin[1]
     theta: 0,
   },
-  width: 1403,    // 맵 이미지 너비 (pixels)
-  height: 1026,   // 맵 이미지 높이 (pixels)
+  width: 1454,    // 맵 이미지 너비 (pixels)
+  height: 501,    // 맵 이미지 높이 (pixels)
   // Gazebo 시뮬레이터 사용 여부 (환경변수로 설정 가능)
   // true: Gazebo offset 적용, false: 실제 로봇
   useGazeboOffset: import.meta.env.VITE_USE_GAZEBO === 'true',
@@ -80,7 +80,7 @@ export const TOPICS = {
   odom: '/odom',
   scan: '/scan_raw',  // LiDAR raw 스캔 데이터 (Robot과 PC Navigation 통일)
   amclPose: '/amcl_pose',
-  battery: '/battery_state',
+  battery: '/ros_robot_controller/battery',  // std_msgs/UInt16 (millivolts)
 
   // 발행 (Publish)
   cmdVel: '/cmd_vel',

@@ -1,5 +1,5 @@
 import { useMapInteraction } from '@/hooks/useMapInteraction';
-import { useNavigation } from '@/hooks/useNavigation';
+import { useRobotStore } from '@/stores/robotStore';
 
 interface SetGoalPanelProps {
   namespace: string;
@@ -7,7 +7,7 @@ interface SetGoalPanelProps {
 
 export const SetGoalPanel = ({ namespace }: SetGoalPanelProps) => {
   const { mapMode, setMapMode, activeRobot } = useMapInteraction();
-  const { isActionServerReady } = useNavigation(namespace);
+  const { rosConnected } = useRobotStore();
 
   const isActive = mapMode === 'goal' && activeRobot === namespace;
 
@@ -22,17 +22,17 @@ export const SetGoalPanel = ({ namespace }: SetGoalPanelProps) => {
   return (
     <button
       onClick={handleClick}
-      disabled={!isActionServerReady}
+      disabled={!rosConnected}
       className={`flex-1 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
         isActive
           ? 'bg-green-600 text-white'
-          : !isActionServerReady
+          : !rosConnected
           ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
       }`}
-      title={!isActionServerReady ? 'Navigation 서버 준비 중...' : ''}
+      title={!rosConnected ? 'ROS 연결 대기 중...' : ''}
     >
-      {isActive ? '목표점 설정 중...' : !isActionServerReady ? '⏳ 준비 중...' : '목표점 설정'}
+      {isActive ? '목표점 설정 중...' : !rosConnected ? '⏳ 연결 중...' : '목표점 설정'}
     </button>
   );
 };

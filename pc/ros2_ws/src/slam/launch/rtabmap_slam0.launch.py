@@ -8,10 +8,9 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction, OpaqueFunction, TimerAction
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
     sim = LaunchConfiguration('sim', default='false').perform(context)
-    master_name = LaunchConfiguration('master_name', default=os.environ['MASTER']).perform(context)
-    robot_name = LaunchConfiguration('robot_name', default=os.environ['HOST']).perform(context)
+    master_name = LaunchConfiguration('master_name', default=os.environ.get('MASTER', '/')).perform(context)
+    robot_name = LaunchConfiguration('robot_name', default=os.environ.get('HOST', '/')).perform(context)
 
     sim_arg = DeclareLaunchArgument('sim', default_value=sim)
     master_name_arg = DeclareLaunchArgument('master_name', default_value=master_name)
@@ -20,19 +19,17 @@ def launch_setup(context):
     frame_prefix = '' if robot_name == '/' else '%s/' % robot_name
     topic_prefix = '' if robot_name == '/' else '/%s' % robot_name
     use_sim_time = 'true' if sim == 'true' else 'false'
-    map_frame = 'map'.format(frame_prefix)
+    map_frame = '{}map'.format(frame_prefix)
     odom_frame = '{}odom'.format(frame_prefix)
     base_frame = '{}base_footprint'.format(frame_prefix)
-    depth_camera_topic = '/ascamera/camera_publisher/depth0/image_raw'.format(topic_prefix)
-    depth_camera_info = '/ascamera/camera_publisher/rgb0/camera_info'.format(topic_prefix)
-    rgb_camera_topic = '/ascamera/camera_publisher/rgb0/image'.format(topic_prefix)
+    depth_camera_topic = '{}/ascamera/camera_publisher/depth0/image_raw'.format(topic_prefix)
+    depth_camera_info = '{}/ascamera/camera_publisher/rgb0/camera_info'.format(topic_prefix)
+    rgb_camera_topic = '{}/ascamera/camera_publisher/rgb0/image'.format(topic_prefix)
     odom_topic = '{}/odom'.format(topic_prefix)
-    scan_topic = '{}/scan_raw'.format(topic_prefix)  
+    scan_topic = '{}/scan_raw'.format(topic_prefix)
 
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
 
     base_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

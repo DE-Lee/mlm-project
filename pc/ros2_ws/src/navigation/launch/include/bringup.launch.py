@@ -11,11 +11,8 @@ from launch.actions import (DeclareLaunchArgument, GroupAction, OpaqueFunction,
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
-    if compiled == 'True':
-        navigation_package_path = get_package_share_directory('navigation')
-    else:
-        navigation_package_path = '/home/lee/ros2_ws/src/navigation'
+    # 항상 패키지 경로 사용
+    navigation_package_path = get_package_share_directory('navigation')
 
     # Create the launch configuration variables
     rtabmap = LaunchConfiguration('rtabmap')

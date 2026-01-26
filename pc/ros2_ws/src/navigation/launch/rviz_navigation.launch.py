@@ -5,16 +5,8 @@ from launch import LaunchDescription, LaunchService
 from launch.actions import DeclareLaunchArgument, OpaqueFunction, GroupAction, IncludeLaunchDescription, ExecuteProcess
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'True')
-
-    if compiled == 'True':
-        navigation_package_path = get_package_share_directory('navigation')
-    else:
-        # 호스트 PC와 Docker 컨테이너 모두 지원
-        if os.path.exists('/home/lee/ros2_ws/src/navigation'):
-            navigation_package_path = '/home/lee/ros2_ws/src/navigation'
-        else:
-            navigation_package_path = '/home/lee/ros2_ws/src/navigation'
+    # 항상 패키지 경로 사용
+    navigation_package_path = get_package_share_directory('navigation')
    
     rviz_node = ExecuteProcess(
             cmd=['rviz2', 'rviz2', '-d', os.path.join(navigation_package_path, 'rviz/navigation.rviz')],

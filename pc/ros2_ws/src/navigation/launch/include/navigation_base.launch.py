@@ -8,12 +8,8 @@ from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, OpaqueFunction
 
 def launch_setup(context):
-    # Get the launch directory
-    compiled = os.environ.get('need_compile', 'False')
-    if compiled == 'True':
-        navigation_package_path = get_package_share_directory('navigation')
-    else:
-        navigation_package_path = '/home/lee/ros2_ws/src/navigation'
+    # 항상 패키지 경로 사용
+    navigation_package_path = get_package_share_directory('navigation')
 
     use_namespace = LaunchConfiguration('use_namespace').perform(context)
     use_teb = LaunchConfiguration('use_teb', default='false').perform(context)

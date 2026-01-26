@@ -25,13 +25,9 @@ def launch_setup(context):
             f"   Fix: export ROS_DOMAIN_ID=3"
         )
 
-    compiled = os.environ.get('need_compile', 'False')
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-        navigation_package_path = get_package_share_directory('navigation')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
-        navigation_package_path = '/home/lee/ros2_ws/src/navigation'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
+    navigation_package_path = get_package_share_directory('navigation')
 
     map_name = LaunchConfiguration('map').perform(context)
     robot_name = LaunchConfiguration('robot_name').perform(context)

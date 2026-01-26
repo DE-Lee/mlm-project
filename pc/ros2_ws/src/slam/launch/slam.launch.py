@@ -8,7 +8,6 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction, OpaqueFunction, TimerAction
 
 def launch_setup(context):
-    compiled = os.environ.get('need_compile', 'False')
     enable_save = LaunchConfiguration('enable_save', default='true').perform(context)
     slam_method = LaunchConfiguration('slam_method', default='slam_toolbox').perform(context)
     sim = LaunchConfiguration('sim', default='false').perform(context)
@@ -27,10 +26,8 @@ def launch_setup(context):
     odom_frame = f'{frame_prefix}odom'
     base_frame = f'{frame_prefix}base_footprint'
 
-    if compiled == 'True':
-        slam_package_path = get_package_share_directory('slam')
-    else:
-        slam_package_path = '/home/lee/ros2_ws/src/slam'
+    # 항상 패키지 경로 사용
+    slam_package_path = get_package_share_directory('slam')
 
     base_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

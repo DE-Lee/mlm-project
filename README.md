@@ -5,21 +5,25 @@ MentorPi 로봇 기반 멀티로봇 학습 시스템 - Robot, PC Navigation, Web
 ## 시스템 구성
 
 ```
-┌─────────────┐    CycloneDDS     ┌─────────────┐    rosbridge    ┌─────────────┐
-│   Robot     │ ◄──Peer-to-Peer──►│     PC      │ ◄──WebSocket──► │     Web     │
-│ (Pi5/Docker)│     Unicast       │ (Ubuntu22.04)│                 │  Dashboard  │
-└─────────────┘                   └─────────────┘                 └─────────────┘
-  • 센서/액추에이터                  • Nav2 Navigation                • 모니터링/제어
-  • Odometry/EKF                  • SLAM/맵 관리                   • 목표점 설정
-  • LiDAR (LD19)                  • rosbridge 서버                 • 멀티로봇 지원
+┌─────────────────┐                 ┌─────────────────┐                 ┌─────────────┐
+│ Robot1          │  CycloneDDS     │       PC        │   rosbridge     │    Web      │
+│ (172.16.10.172) │◄──Peer-to-Peer─►│ (172.16.11.203) │◄───WebSocket───►│  Dashboard  │
+├─────────────────┤    Unicast      │                 │                 │             │
+│ Robot2          │◄──Peer-to-Peer─►│                 │                 │             │
+│ (172.16.10.37)  │                 └─────────────────┘                 └─────────────┘
+└─────────────────┘                   • Nav2 Navigation                  • 모니터링/제어
+  • 센서/액추에이터                     • AMCL Localization               • 목표점 설정
+  • Odometry/EKF                      • rosbridge 서버                   • 멀티로봇 지원
+  • LiDAR (LD19)                      • Multi-robot 지원
 ```
 
 ## 프로젝트 구조
 
 ```
-workspaces/
-├── robot/          # 로봇 제어 패키지 (Raspberry Pi 5 + Docker)
-├── pc/             # Navigation 패키지 (Ubuntu 22.04)
+mlm_ws/
+├── robot/          # Robot1 제어 패키지 (172.16.10.172)
+├── robot2/         # Robot2 제어 패키지 (172.16.10.37)
+├── pc/             # Navigation 패키지 (PC - 172.16.11.203)
 └── web/            # 웹 대시보드 (React + TypeScript)
 ```
 
@@ -29,10 +33,11 @@ workspaces/
 
 | 항목 | 값 | 설명 |
 |------|-----|------|
-| Robot IP | `172.16.10.172` | 로봇 (Raspberry Pi) |
-| PC IP | `172.16.11.167` | PC (Navigation 서버) |
+| Robot1 IP | `172.16.10.172` | MentorPi #1 |
+| Robot2 IP | `172.16.10.37` | MentorPi #2 |
+| PC IP | `172.16.11.203` | PC (Navigation 서버) |
 | WiFi | 동일 네트워크 | Robot, PC, Web 모두 같은 WiFi |
-| ROS_DOMAIN_ID | `3` | Robot과 PC 동일하게 설정 |
+| ROS_DOMAIN_ID | `3` | 모든 기기 동일하게 설정 |
 
 ### DDS 통신 방식
 
@@ -58,10 +63,10 @@ workspaces/
 
 ## 빠른 시작
 
-### 1. Robot 설정
+### 1. Robot1 설정
 
 ```bash
-# Robot (Raspberry Pi 5 Docker 내부)
+# Robot1 (172.16.10.172) - Raspberry Pi 5 Docker 내부
 cd /home/ubuntu/ros2_ws
 colcon build --symlink-install
 source install/setup.zsh
@@ -69,44 +74,128 @@ source install/setup.zsh
 # CycloneDDS 설정 확인 (PC IP가 올바른지 확인)
 cat ~/cyclonedds/cyclonedds.xml
 
-# 로봇 실행 (robot1 namespace)
+# Robot1 실행
 ros2 launch bringup bringup_ns.launch.py robot_name:=robot1
 ```
 
-### 2. PC 설정
+### 2. Robot2 설정
 
 ```bash
-# PC (Ubuntu 22.04)
-cd ~/ros2_ws
+# Robot2 (172.16.10.37) - Raspberry Pi 5 Docker 내부
+cd /home/ubuntu/ros2_ws
 colcon build --symlink-install
-source install/setup.bash
+source install/setup.zsh
 
-# rosbridge 서버 실행 (필수!)
-ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+# CycloneDDS 설정 확인 (PC IP가 올바른지 확인)
+cat ~/cyclonedds/cyclonedds.xml
 
-# Navigation 실행 (별도 터미널)
-ros2 launch navigation navigation_pc.launch.py map:=mlm_map.yaml robot_name:=robot1
-
-# 맵 PNG 변환 (웹 대시보드용, 최초 1회)
-cd /path/to/pc
-./convert_map_to_png.sh mlm_map
+# Robot2 실행
+ros2 launch bringup bringup_ns.launch.py robot_name:=robot2
 ```
 
-### 3. Web 설정
+### 3. PC 설정 (Multi-Robot Navigation)
+
+```bash
+# PC (Ubuntu 22.04 - 172.16.11.203)
+cd ~/mlm_ws/pc/ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+export ROS_DOMAIN_ID=3
+
+# rosbridge 서버 실행 (필수! - 별도 터미널)
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+
+# Robot1 Navigation 실행 (별도 터미널)
+ros2 launch navigation navigation_pc.launch.py map:=mlm_slam robot_name:=robot1
+
+# Robot2 Navigation 실행 (별도 터미널)
+ros2 launch navigation navigation_pc.launch.py map:=mlm_slam robot_name:=robot2
+
+# 맵 PNG 변환 (웹 대시보드용, 최초 1회)
+cd ~/mlm_ws/pc
+./convert_map_to_png.sh mlm_slam
+```
+
+### 4. Web 설정
 
 ```bash
 # Web Dashboard
-cd /path/to/web
+cd ~/mlm_ws/web
 
 # .env 파일 생성 및 PC IP 설정
 cp .env.example .env
-# VITE_ROS_BRIDGE_URL=ws://172.16.11.167:9090 확인
+# VITE_ROS_BRIDGE_URL=ws://172.16.11.203:9090 확인
 
 # 의존성 설치
 npm install
 
 # 개발 서버 실행
 npm run dev
+```
+
+## Multi-Robot 운영 가이드
+
+### 전체 시스템 실행 순서
+
+1. **Robot1 & Robot2 실행** (각 로봇에서)
+   ```bash
+   # Robot1
+   ros2 launch bringup bringup_ns.launch.py robot_name:=robot1
+
+   # Robot2
+   ros2 launch bringup bringup_ns.launch.py robot_name:=robot2
+   ```
+
+2. **PC Navigation 실행** (PC에서 3개 터미널)
+   ```bash
+   # 터미널 1: rosbridge
+   ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+
+   # 터미널 2: Robot1 Navigation
+   ros2 launch navigation navigation_pc.launch.py map:=mlm_slam robot_name:=robot1
+
+   # 터미널 3: Robot2 Navigation
+   ros2 launch navigation navigation_pc.launch.py map:=mlm_slam robot_name:=robot2
+   ```
+
+3. **Web Dashboard 실행**
+   ```bash
+   cd ~/mlm_ws/web && npm run dev
+   ```
+
+### Multi-Robot 토픽 구조
+
+```
+/robot1/scan_raw        # Robot1 LiDAR
+/robot1/odom            # Robot1 Odometry
+/robot1/cmd_vel         # Robot1 속도 명령
+/robot1/amcl_pose       # Robot1 AMCL 위치
+/robot1/goal_pose       # Robot1 목표점
+
+/robot2/scan_raw        # Robot2 LiDAR
+/robot2/odom            # Robot2 Odometry
+/robot2/cmd_vel         # Robot2 속도 명령
+/robot2/amcl_pose       # Robot2 AMCL 위치
+/robot2/goal_pose       # Robot2 목표점
+
+/tf, /tf_static         # Global TF (모든 로봇 공유)
+```
+
+### Multi-Robot 확인 명령어
+
+```bash
+# 모든 토픽 확인
+ros2 topic list | grep -E "robot[12]"
+
+# TF 프레임 확인
+ros2 run tf2_tools view_frames
+
+# 각 로봇 위치 확인
+ros2 topic echo /robot1/amcl_pose
+ros2 topic echo /robot2/amcl_pose
+
+# 통신 상태 확인
+ros2 node list
 ```
 
 ## 주요 변경사항 (정합성 수정)
@@ -144,8 +233,9 @@ ip addr show | grep -E "^[0-9]+:" | awk -F: '{print $2}'
 # pc/cyclonedds/cyclonedds.xml에서 <NetworkInterface name="wlp0s20f3"/> 확인
 
 # 3. Ping 테스트
-ping 172.16.11.167  # Robot에서 PC로
-ping 172.16.10.172  # PC에서 Robot으로
+ping 172.16.11.203  # Robot에서 PC로
+ping 172.16.10.172  # PC에서 Robot1으로
+ping 172.16.10.37   # PC에서 Robot2로
 
 # 4. ROS_DOMAIN_ID 확인
 echo $ROS_DOMAIN_ID  # Robot과 PC 모두 3이어야 함
@@ -158,11 +248,11 @@ echo $ROS_DOMAIN_ID  # Robot과 PC 모두 3이어야 함
 ps aux | grep rosbridge
 
 # 2. rosbridge 포트 확인
-netstat -tuln | grep 9090
+ss -tuln | grep 9090
 
 # 3. .env 파일 확인
-cat web/.env
-# VITE_ROS_BRIDGE_URL=ws://172.16.11.167:9090 확인
+cat ~/mlm_ws/web/.env
+# VITE_ROS_BRIDGE_URL=ws://172.16.11.203:9090 확인
 
 # 4. 브라우저 콘솔 확인 (F12)
 ```

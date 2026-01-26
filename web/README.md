@@ -72,7 +72,7 @@ ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 
 ```bash
 # PC에서 실행
-ros2 launch navigation navigation_pc.launch.py map:=mlm_map.yaml robot_name:=robot1
+ros2 launch navigation navigation_pc.launch.py map:=mlm_slam.yaml robot_name:=robot1
 ```
 
 ### 3. Robot 실행

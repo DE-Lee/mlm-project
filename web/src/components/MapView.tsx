@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useRobotStore } from '@/stores/robotStore';
-import { useNavigation } from '@/hooks/useNavigation';
+import { useGoalPublisher } from '@/hooks/useGoalPublisher';
 import { useInitialPose } from '@/hooks/useInitialPose';
 import { useMapInteraction } from '@/hooks/useMapInteraction';
 import { ROBOTS, MAP_CONFIG } from '@/config/robots';
@@ -33,8 +33,8 @@ export const MapView = ({ width = 600, height = 600 }: MapViewProps) => {
   const { robots } = useRobotStore();
   const { mapMode, activeRobot, setMapMode } = useMapInteraction();
 
-  // 활성 로봇에 대한 navigation
-  const { navigateToPose } = useNavigation(activeRobot || 'robot1');
+  // 활성 로봇에 대한 navigation (topic 기반)
+  const { publishGoal } = useGoalPublisher(activeRobot || 'robot1');
   const { publishInitialPose } = useInitialPose(activeRobot || 'robot1');
 
   // 맵 이미지 로드
@@ -460,7 +460,7 @@ export const MapView = ({ width = 600, height = 600 }: MapViewProps) => {
     if (dragState.mode === 'initialPose') {
       publishInitialPose(dragState.startPos.x, dragState.startPos.y, theta);
     } else if (dragState.mode === 'goal') {
-      navigateToPose(dragState.startPos.x, dragState.startPos.y, theta);
+      publishGoal(dragState.startPos.x, dragState.startPos.y, theta);
     }
 
     // 상태 초기화
