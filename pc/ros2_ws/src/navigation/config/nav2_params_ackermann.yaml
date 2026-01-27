@@ -286,8 +286,8 @@ controller_server:
       use_velocity_scaled_lookahead_dist: true
       min_approach_linear_velocity: 0.08    # 0.05 → 0.08
       approach_velocity_scaling_dist: 0.5   # 0.4 → 0.5
-      use_collision_detection: true
-      max_allowed_time_to_collision_up_to_carrot: 1.0
+      use_collision_detection: false  # Emergency Stop: safety_node가 TTC 담당
+      # max_allowed_time_to_collision_up_to_carrot: 1.0  # 불필요 (safety_node 사용)
       use_regulated_linear_velocity_scaling: true
       use_fixed_curvature_lookahead: true   # Ackermann 곡률 제어
       curvature_lookahead_dist: 0.3         # 0.25 → 0.3

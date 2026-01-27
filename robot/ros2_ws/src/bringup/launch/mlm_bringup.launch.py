@@ -18,9 +18,11 @@ def launch_setup(context):
     if compiled == "True":
         controller_package_path = get_package_share_directory("controller")
         peripherals_package_path = get_package_share_directory("peripherals")
+        avoid_package_path = get_package_share_directory("mlm_avoid_bringup")
     else:
         controller_package_path = "/home/ubuntu/ros2_ws/src/driver/controller"
         peripherals_package_path = "/home/ubuntu/ros2_ws/src/peripherals"
+        avoid_package_path = "/home/ubuntu/ros2_ws/src/mlm_avoid_bringup"
 
     startup_check_node = Node(
         package="bringup",
@@ -47,10 +49,10 @@ def launch_setup(context):
             os.path.join(peripherals_package_path, "launch/lidar.launch.py")),
     )
 
-    rosbridge_websocket_launch = ExecuteProcess(
-            cmd=["ros2", "launch", "rosbridge_server", "rosbridge_websocket_launch.xml"],
-            output="screen"
-        )
+    # rosbridge_websocket_launch = ExecuteProcess(
+    #         cmd=["ros2", "launch", "rosbridge_server", "rosbridge_websocket_launch.xml"],
+    #         output="screen"
+    #     )
 
     init_pose_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(controller_package_path, "launch/init_pose.launch.py")),
@@ -61,6 +63,13 @@ def launch_setup(context):
         }.items(),
     )
 
+    # Emergency Stop 런치 (Nav2 자율주행용 TTC 기반 안전 시스템)
+    # namespace는 PushRosNamespace로 상위에서 적용됨
+    avoid_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(avoid_package_path, "launch/avoid.launch.py")),
+    )
+
     return [
             LogInfo(msg=f"[MLM_BRINGUP] use_global_tf={use_global_tf}, robot_namespace={robot_namespace}"),
             startup_check_node,
@@ -69,6 +78,7 @@ def launch_setup(context):
             lidar_launch,
             # rosbridge_websocket_launch,  # PC에서 실행
             init_pose_launch,
+            avoid_launch,  # Emergency Stop (Nav2 자율주행용)
             ]
 
 def generate_launch_description():

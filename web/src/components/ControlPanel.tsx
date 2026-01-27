@@ -12,7 +12,7 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
   const { publishVelocity, stop } = useManualControl(namespace);
   const { cancelNavigation } = useNavigation(namespace);
   const { robots, keyboardEnabledRobots, toggleKeyboardEnabled } = useRobotStore();
-  const { modes, setMode } = useControlModeStore();
+  const { modes } = useControlModeStore();
 
   const robot = robots[namespace];
   const currentMode = modes[namespace] || ControlMode.IDLE;
@@ -108,7 +108,9 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
 
   const buttonClass = (key: string) =>
     `w-12 h-12 rounded-lg font-bold text-lg transition-all ${
-      activeKey === key
+      !isKeyboardEnabled
+        ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+        : activeKey === key
         ? 'bg-green-600 text-white scale-95'
         : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
     }`;
@@ -136,7 +138,8 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
         <div className="flex gap-2">
           <button
             className={buttonClass('q')}
-            onMouseDown={() => handleKeyDown('q')}
+            disabled={!isKeyboardEnabled}
+            onMouseDown={() => isKeyboardEnabled && handleKeyDown('q')}
             onMouseUp={handleKeyUp}
             onMouseLeave={handleKeyUp}
           >
@@ -144,7 +147,8 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
           </button>
           <button
             className={buttonClass('w')}
-            onMouseDown={() => handleKeyDown('w')}
+            disabled={!isKeyboardEnabled}
+            onMouseDown={() => isKeyboardEnabled && handleKeyDown('w')}
             onMouseUp={handleKeyUp}
             onMouseLeave={handleKeyUp}
           >
@@ -152,44 +156,53 @@ export const ControlPanel = ({ namespace }: ControlPanelProps) => {
           </button>
           <button
             className={buttonClass('e')}
-            onMouseDown={() => handleKeyDown('e')}
+            disabled={!isKeyboardEnabled}
+            onMouseDown={() => isKeyboardEnabled && handleKeyDown('e')}
             onMouseUp={handleKeyUp}
             onMouseLeave={handleKeyUp}
           >
             ↗
           </button>
         </div>
-        
+
         <div className="flex gap-2">
           <button
             className={buttonClass('a')}
-            onMouseDown={() => handleKeyDown('a')}
+            disabled={!isKeyboardEnabled}
+            onMouseDown={() => isKeyboardEnabled && handleKeyDown('a')}
             onMouseUp={handleKeyUp}
             onMouseLeave={handleKeyUp}
           >
             ←
           </button>
           <button
-            className="w-12 h-12 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700"
-            onClick={stop}
+            className={`w-12 h-12 rounded-lg font-bold ${
+              !isKeyboardEnabled
+                ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                : 'bg-red-600 text-white hover:bg-red-700'
+            }`}
+            disabled={!isKeyboardEnabled}
+            onClick={() => isKeyboardEnabled && stop()}
           >
             ■
           </button>
           <button
             className={buttonClass('d')}
-            onMouseDown={() => handleKeyDown('d')}
+            disabled={!isKeyboardEnabled}
+            onMouseDown={() => isKeyboardEnabled && handleKeyDown('d')}
             onMouseUp={handleKeyUp}
             onMouseLeave={handleKeyUp}
           >
             →
           </button>
         </div>
-        
+
         <div className="flex gap-2">
           <div className="w-12 h-12" />
           <button
             className={buttonClass('s')}
-            onMouseDown={() => handleKeyDown('s')}
+            disabled={!isKeyboardEnabled}
+            onMouseDown={() => isKeyboardEnabled && handleKeyDown('s')}
             onMouseUp={handleKeyUp}
             onMouseLeave={handleKeyUp}
           >

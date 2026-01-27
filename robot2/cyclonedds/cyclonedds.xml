@@ -19,7 +19,7 @@
       <MaxAutoParticipantIndex>120</MaxAutoParticipantIndex>
       <!-- Peer-to-Peer Unicast: PC IP 추가 -->
       <Peers>
-        <Peer address="172.16.11.203"/>  <!-- PC IP 주소 -->
+        <Peer address="172.16.11.222"/>  <!-- PC IP 주소 -->
       </Peers>
     </Discovery>
   </Domain>

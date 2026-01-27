@@ -1,0 +1,41 @@
+# Emergency Stop System Configuration for DOG (robot1)
+# 작성일: 2026-01-27
+# 원본: GT robot의 mlm_avoid_bringup/config/avoid_params.yaml
+# 변경: robot1 namespace 토픽 + 와일드카드 키로 multi-robot 지원
+
+# Sync Node Parameters
+# 동기화 노드 파라미터
+# 와일드카드 사용: 어떤 네임스페이스에서도 파라미터 로딩 가능
+/**/mlm_avoid_sync_node:
+  ros__parameters:
+    # Buffer size for sensor data
+    # 센서 데이터 버퍼 크기
+    buffer_size: 30
+
+    # 센서 토픽 (robot1 namespace)
+    image_topic: "/robot1/image_raw"
+    scan_topic: "/robot1/scan_raw"
+    odom_topic: "/robot1/odom"
+    imu_topic: "/robot1/imu"
+
+    # 내부 통신 토픽 (robot1 namespace)
+    synced_data_topic: "/robot1/mlm_avoid/synced_data"
+
+# Safety Node Parameters
+# Safety 노드 파라미터
+/**/mlm_avoid_safety_node:
+  ros__parameters:
+    # TTC 임계값
+    # TTC threshold to start intervention (seconds)
+    ttc_threshold_start: 2.0   # 이 값 미만 → 긴급정지 시작
+
+    # TTC threshold to end intervention (seconds)
+    ttc_threshold_end: 3.0     # 이 값 초과 → 긴급정지 해제
+
+    # Command velocity timeout (seconds)
+    cmd_vel_timeout: 0.5       # 명령 타임아웃
+
+    # 토픽 설정 (robot1 namespace)
+    synced_data_topic: "/robot1/mlm_avoid/synced_data"
+    cmd_vel_nav_topic: "/robot1/cmd_vel_nav"
+    cmd_vel_topic: "/robot1/cmd_vel"

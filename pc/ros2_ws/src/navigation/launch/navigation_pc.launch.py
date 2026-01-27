@@ -113,7 +113,7 @@ def launch_setup(context):
                 'controller_plugins': ['FollowPath'],
                 'FollowPath.plugin': 'nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController',
             }],
-            remappings=costmap_remappings + [('cmd_vel', 'cmd_vel')],
+            remappings=costmap_remappings + [('cmd_vel', 'cmd_vel_nav')],  # Emergency Stop: safety_node 경유
         ),
         # Planner Server (global_costmap 포함)
         Node(
@@ -125,7 +125,7 @@ def launch_setup(context):
             parameters=[configured_params, {'use_sim_time': False}],
             remappings=costmap_remappings,
         ),
-        # Behavior Server
+        # Behavior Server (cmd_vel → cmd_vel_nav: Emergency Stop 경유)
         Node(
             package='nav2_behaviors',
             executable='behavior_server',
@@ -133,7 +133,7 @@ def launch_setup(context):
             namespace=ns,
             output='screen',
             parameters=[configured_params, {'use_sim_time': False}],
-            remappings=remappings,
+            remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
         ),
         # BT Navigator
         Node(
