@@ -15,6 +15,7 @@ const yawToQuaternion = (yaw: number) => ({
 
 export const useInitialPose = (namespace: string) => {
   const publisherRef = useRef<ROSLIB.Topic | null>(null);
+  const lastNamespaceRef = useRef<string>('');
   const { rosConnected, updateRobotPose } = useRobotStore();
 
   // Initial Pose 발행 (AMCL에 로봇 초기 위치 알림)
@@ -27,13 +28,15 @@ export const useInitialPose = (namespace: string) => {
         return false;
       }
 
-      // Publisher 생성 (재사용)
-      if (!publisherRef.current) {
+      // Publisher 생성 (namespace 변경 시 재생성)
+      if (!publisherRef.current || lastNamespaceRef.current !== namespace) {
         publisherRef.current = new ROSLIB.Topic({
           ros,
           name: getTopicName(namespace, TOPICS.initialPose),
           messageType: 'geometry_msgs/PoseWithCovarianceStamped',
         });
+        lastNamespaceRef.current = namespace;
+        console.log(`[InitialPose] Created publisher for ${namespace}`);
       }
 
       // 공분산 행렬 (6x6 = 36개, 대각선만 설정)

@@ -89,7 +89,7 @@
       odom0_config: [false, false, false,
                      false, false, false,
                      true, true, false,
-                     false, false, true,
+                     false, false, false,  # vyaw 비활성화: cmd_vel 기반이라 실제 회전 미반영
                      false, false, false]
 
       # If you have high-frequency data or are running with a low frequency parameter value, then you may want to increase
@@ -168,7 +168,7 @@
                     false,  false, false]
       imu0_nodelay: false
       imu0_differential: false
-      imu0_relative: true
+      imu0_relative: false  # true → false: IMU 절대 yaw 사용 (로봇 회전 반영)
       imu0_queue_size: 4
       #imu0_pose_rejection_threshold: 0.8                 # Note the difference in parameter names
       #imu0_twist_rejection_threshold: 0.8                #

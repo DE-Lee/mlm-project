@@ -11,11 +11,19 @@ def launch_setup(context):
     compiled = os.environ.get("need_compile", "False")
     namespace = LaunchConfiguration("namespace").perform(context)
     use_namespace = LaunchConfiguration("use_namespace").perform(context)
-    odom_frame = LaunchConfiguration("odom_frame")
-    base_frame = LaunchConfiguration("base_frame")
+    odom_frame = LaunchConfiguration("odom_frame").perform(context)
+    base_frame = LaunchConfiguration("base_frame").perform(context)
     imu_frame = LaunchConfiguration("imu_frame")
     frame_prefix = LaunchConfiguration("frame_prefix")
+    frame_prefix_str = LaunchConfiguration("frame_prefix").perform(context)
     use_global_tf = LaunchConfiguration("use_global_tf").perform(context)
+
+    # Multi-robot: frame_prefix 적용된 frame 이름 생성
+    # 예: frame_prefix="robot2/" → odom_frame_id="robot2/odom"
+    odom_frame_id = f"{frame_prefix_str}{odom_frame}" if frame_prefix_str else odom_frame
+    base_frame_id = f"{frame_prefix_str}{base_frame}" if frame_prefix_str else base_frame
+
+    print(f"[ODOM_PUB DEBUG] frame_prefix={frame_prefix_str}, odom_frame_id={odom_frame_id}, base_frame_id={base_frame_id}")
 
     if compiled == "True":
         rosmentor_description_package_path = get_package_share_directory("mentorpi_description")
@@ -48,16 +56,17 @@ def launch_setup(context):
         }.items()
     )
 
+    # Multi-robot: frame_prefix 적용된 frame 이름 사용
     odom_publisher_node = Node(
         package="controller",
         executable="odom_publisher",
         name="odom_publisher",
         output="screen",
         parameters=[os.path.join(controller_package_path, "config/calibrate_params.yaml"), {
-            "base_frame_id": base_frame, 
-            "odom_frame_id": odom_frame,
+            "base_frame_id": base_frame_id,   # frame_prefix 적용 (예: robot2/base_footprint)
+            "odom_frame_id": odom_frame_id,   # frame_prefix 적용 (예: robot2/odom)
             "pub_odom_topic": True,
-            }],  
+            }],
     )
 
     return [

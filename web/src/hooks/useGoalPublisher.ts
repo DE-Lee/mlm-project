@@ -14,25 +14,28 @@ const yawToQuaternion = (yaw: number) => ({
 
 export const useGoalPublisher = (namespace: string) => {
   const publisherRef = useRef<ROSLIB.Topic | null>(null);
+  const lastNamespaceRef = useRef<string>('');
   const { rosConnected, updateRobotGoal } = useRobotStore();
 
   // Goal Pose 발행
   const publishGoal = useCallback(
     (x: number, y: number, theta: number = 0) => {
       const ros = getRos();
-      
+
       if (!ros || !rosConnected) {
         console.warn('[Goal] ROS not connected');
         return false;
       }
 
-      // Publisher 생성 (재사용)
-      if (!publisherRef.current) {
+      // Publisher 생성 (namespace 변경 시 재생성)
+      if (!publisherRef.current || lastNamespaceRef.current !== namespace) {
         publisherRef.current = new ROSLIB.Topic({
           ros,
           name: getTopicName(namespace, TOPICS.goalPose),
           messageType: 'geometry_msgs/PoseStamped',
         });
+        lastNamespaceRef.current = namespace;
+        console.log(`[Goal] Created publisher for ${namespace}`);
       }
 
       const goalMessage = new ROSLIB.Message({
@@ -76,22 +79,25 @@ export const useGoalPublisher = (namespace: string) => {
 // 수동 제어 (cmd_vel 발행)
 export const useManualControl = (namespace: string) => {
   const publisherRef = useRef<ROSLIB.Topic | null>(null);
+  const lastNamespaceRef = useRef<string>('');
   const { rosConnected } = useRobotStore();
 
   const publishVelocity = useCallback(
     (linear: number, angular: number) => {
       const ros = getRos();
-      
+
       if (!ros || !rosConnected) {
         return;
       }
 
-      if (!publisherRef.current) {
+      // Publisher 생성 (namespace 변경 시 재생성)
+      if (!publisherRef.current || lastNamespaceRef.current !== namespace) {
         publisherRef.current = new ROSLIB.Topic({
           ros,
           name: getTopicName(namespace, TOPICS.cmdVelManual),
           messageType: 'geometry_msgs/Twist',
         });
+        lastNamespaceRef.current = namespace;
       }
 
       const twistMessage = new ROSLIB.Message({

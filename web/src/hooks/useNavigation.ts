@@ -18,6 +18,7 @@ const yawToQuaternion = (yaw: number) => ({
  */
 export const useNavigation = (namespace: string) => {
   const actionClientRef = useRef<ROSLIB.ActionClient | null>(null);
+  const lastNamespaceRef = useRef<string>('');
   const currentGoalRef = useRef<ROSLIB.Goal | null>(null);
   const [isActionServerReady, setIsActionServerReady] = useState(false);
 
@@ -32,12 +33,15 @@ export const useNavigation = (namespace: string) => {
       return;
     }
 
-    if (!actionClientRef.current) {
+    // namespace 변경 시 action client 재생성
+    if (!actionClientRef.current || lastNamespaceRef.current !== namespace) {
       actionClientRef.current = new ROSLIB.ActionClient({
         ros,
         serverName: `/${namespace}/navigate_to_pose`,
         actionName: 'nav2_msgs/action/NavigateToPose',
       });
+      lastNamespaceRef.current = namespace;
+      setIsActionServerReady(false);  // 새 서버 연결 시 상태 리셋
       console.log(`[${namespace}] NavigateToPose action client created`);
     }
 
@@ -216,6 +220,7 @@ export const useNavigation = (namespace: string) => {
  */
 export const useManualControl = (namespace: string) => {
   const publisherRef = useRef<ROSLIB.Topic | null>(null);
+  const lastNamespaceRef = useRef<string>('');
   const { rosConnected } = useRobotStore();
   const { setMode } = useControlModeStore();
 
@@ -227,12 +232,14 @@ export const useManualControl = (namespace: string) => {
         return;
       }
 
-      if (!publisherRef.current) {
+      // namespace 변경 시 publisher 재생성
+      if (!publisherRef.current || lastNamespaceRef.current !== namespace) {
         publisherRef.current = new ROSLIB.Topic({
           ros,
           name: `/${namespace}/controller/cmd_vel`,
           messageType: 'geometry_msgs/Twist',
         });
+        lastNamespaceRef.current = namespace;
       }
 
       const twistMessage = new ROSLIB.Message({

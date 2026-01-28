@@ -20,11 +20,17 @@ def launch_setup(context):
     base_frame = LaunchConfiguration("base_frame")
     imu_frame = LaunchConfiguration("imu_frame")
     frame_prefix = LaunchConfiguration("frame_prefix")
+    frame_prefix_str = LaunchConfiguration("frame_prefix").perform(context)  # 실제 문자열 값
     use_global_tf = LaunchConfiguration("use_global_tf").perform(context)
     robot_namespace = LaunchConfiguration("robot_namespace").perform(context)
 
-    # DEBUG
-    print(f"[CONTROLLER DEBUG] compiled={compiled}, use_global_tf={use_global_tf}, robot_namespace={robot_namespace}")
+    # DEBUG - Multi-robot frame_prefix 확인
+    print(f"[CONTROLLER DEBUG] compiled={compiled}, use_global_tf={use_global_tf}, robot_namespace={robot_namespace}, frame_prefix={frame_prefix_str}")
+
+    # Multi-robot: imu_frame에 frame_prefix 적용
+    imu_frame_str = LaunchConfiguration("imu_frame").perform(context)
+    imu_frame_with_prefix = f"{frame_prefix_str}{imu_frame_str}" if frame_prefix_str else imu_frame_str
+    print(f"[CONTROLLER DEBUG] imu_frame_with_prefix={imu_frame_with_prefix}")
 
     if compiled == "True":
         peripherals_package_path = get_package_share_directory("peripherals")
@@ -45,7 +51,7 @@ def launch_setup(context):
         launch_arguments={
             "namespace": namespace,
             "use_namespace": use_namespace,
-            "imu_frame": imu_frame,
+            "imu_frame": imu_frame_with_prefix,  # Multi-robot: frame_prefix 적용된 imu_frame
             "frame_prefix": frame_prefix,
             "base_frame": base_frame,
             "odom_frame": odom_frame,
@@ -59,14 +65,18 @@ def launch_setup(context):
         launch_arguments={
             "use_global_tf": use_global_tf,
             "namespace": robot_namespace,
+            "frame_prefix": frame_prefix_str,  # Multi-robot: IMU frame_id에 prefix 적용
         }.items()
     )
 
-    if use_namespace == "false":
-        ekf_param = ReplaceString(source_file=os.path.join(controller_package_path, "config/ekf.yaml"), replacements={"namespace/": ""})
-    else:
-        ekf_param = ReplaceString(source_file=os.path.join(controller_package_path, "config/ekf.yaml"), replacements={"namespace/": (namespace, "/")})
-    
+    # Multi-robot: frame_prefix를 사용하여 EKF frame 설정
+    # ekf.yaml의 "namespace/" 플레이스홀더를 frame_prefix로 치환
+    # 예: frame_prefix="robot2/" → namespace/odom → robot2/odom
+    ekf_param = ReplaceString(
+        source_file=os.path.join(controller_package_path, "config/ekf.yaml"),
+        replacements={"namespace/": frame_prefix_str}
+    )
+
     ekf_filter_node = Node(
         package="robot_localization",
         executable="ekf_node",

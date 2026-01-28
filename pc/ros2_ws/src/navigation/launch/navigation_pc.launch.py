@@ -13,7 +13,7 @@ from launch_ros.descriptions import ParameterFile
 from launch import LaunchDescription, LaunchService
 from launch.substitutions import LaunchConfiguration
 from launch.actions import DeclareLaunchArgument, GroupAction, OpaqueFunction
-from nav2_common.launch import RewrittenYaml
+from nav2_common.launch import RewrittenYaml, ReplaceString
 
 def launch_setup(context):
     # CRITICAL: ROS_DOMAIN_ID 검증
@@ -47,14 +47,35 @@ def launch_setup(context):
 
     params_file_path = os.path.join(navigation_package_path, 'config', 'nav2_params_ackermann.yaml')
 
+    # Multi-robot frame_prefix 설정 (TF 충돌 방지)
+    frame_prefix = f'{robot_name}/' if robot_name else ''
+
+    # Multi-robot: YAML 파일의 플레이스홀더를 frame_prefix로 치환
+    # ReplaceString으로 텍스트 치환 후 RewrittenYaml로 파라미터 재작성
+    odom_frame_with_prefix = f'{frame_prefix}odom' if frame_prefix else 'odom'
+
+    params_with_frames = ReplaceString(
+        source_file=params_file_path,
+        replacements={
+            'robot_odom_frame': odom_frame_with_prefix,  # local_costmap, behavior_server의 global_frame
+        }
+    )
+
     # RewrittenYaml을 사용하여 네임스페이스에 맞게 파라미터 재작성
     param_substitutions = {
         'use_sim_time': 'False',
+        # AMCL frames
+        'base_frame_id': f'{frame_prefix}base_footprint',
+        'odom_frame_id': f'{frame_prefix}odom',
+        # Nav2 common frames
+        'robot_base_frame': f'{frame_prefix}base_footprint',
     }
+
+    print(f"[NAV_PC DEBUG] frame_prefix={frame_prefix}, base_frame={frame_prefix}base_footprint, odom_frame={odom_frame_with_prefix}")
 
     configured_params = ParameterFile(
         RewrittenYaml(
-            source_file=params_file_path,
+            source_file=params_with_frames,  # ReplaceString 결과 사용
             root_key=robot_name,  # 네임스페이스를 root_key로 사용
             param_rewrites=param_substitutions,
             convert_types=True),
@@ -86,7 +107,7 @@ def launch_setup(context):
             parameters=[configured_params, {'yaml_filename': map_yaml_file, 'use_sim_time': False}],
             remappings=remappings,
         ),
-        # AMCL
+        # AMCL - scan_raw remapping 필수 (멀티로봇: /robot_name/scan_raw 구독)
         Node(
             package='nav2_amcl',
             executable='amcl',
@@ -99,9 +120,10 @@ def launch_setup(context):
                 'set_initial_pose': True,
                 'initial_pose': {'x': 0.0, 'y': 0.0, 'yaw': 0.0},
             }],
-            remappings=remappings,
+            remappings=costmap_remappings,  # scan_raw → /robot_name/scan_raw
         ),
         # Controller Server (local_costmap 포함)
+        # Multi-robot: local_costmap.global_frame은 YAML ReplaceString으로 치환됨
         Node(
             package='nav2_controller',
             executable='controller_server',
@@ -110,39 +132,47 @@ def launch_setup(context):
             output='screen',
             parameters=[configured_params, {
                 'use_sim_time': False,
-                'controller_plugins': ['FollowPath'],
-                'FollowPath.plugin': 'nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController',
             }],
             remappings=costmap_remappings + [('cmd_vel', 'cmd_vel_nav')],  # Emergency Stop: safety_node 경유
         ),
         # Planner Server (global_costmap 포함)
+        # Multi-robot: robot_base_frame은 RewrittenYaml param_substitutions로 치환됨
         Node(
             package='nav2_planner',
             executable='planner_server',
             name='planner_server',
             namespace=ns,
             output='screen',
-            parameters=[configured_params, {'use_sim_time': False}],
+            parameters=[configured_params, {
+                'use_sim_time': False,
+            }],
             remappings=costmap_remappings,
         ),
         # Behavior Server (cmd_vel → cmd_vel_nav: Emergency Stop 경유)
+        # Multi-robot: global_frame은 YAML ReplaceString으로 치환됨
         Node(
             package='nav2_behaviors',
             executable='behavior_server',
             name='behavior_server',
             namespace=ns,
             output='screen',
-            parameters=[configured_params, {'use_sim_time': False}],
+            parameters=[configured_params, {
+                'use_sim_time': False,
+            }],
             remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
         ),
         # BT Navigator
+        # Multi-robot: robot_base_frame은 RewrittenYaml param_substitutions로 치환됨
         Node(
             package='nav2_bt_navigator',
             executable='bt_navigator',
             name='bt_navigator',
             namespace=ns,
             output='screen',
-            parameters=[configured_params, {'use_sim_time': False}],
+            parameters=[configured_params, {
+                'use_sim_time': False,
+                'odom_topic': f'/{robot_name}/odom' if robot_name else '/odom',
+            }],
             remappings=remappings,
         ),
         # Lifecycle Manager for Localization

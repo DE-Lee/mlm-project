@@ -23,15 +23,20 @@ def launch_setup(context):
 
     robot_name = LaunchConfiguration("robot_name").perform(context)
 
-    print(f"[BRINGUP_NS DEBUG] compiled={compiled}, robot_name={robot_name}, bringup_path={bringup_package_path}")
+    # Multi-robot: TF 프레임 충돌 방지를 위한 frame_prefix 생성
+    # 예: robot_name="robot2" → frame_prefix="robot2/"
+    frame_prefix = f"{robot_name}/" if robot_name else ""
 
-    # mlm_bringup.launch.py 포함 - launch_arguments로 전달
+    print(f"[BRINGUP_NS DEBUG] compiled={compiled}, robot_name={robot_name}, frame_prefix={frame_prefix}")
+
+    # mlm_bringup.launch.py 포함 - frame_prefix 전달
     bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(bringup_package_path, "launch/mlm_bringup.launch.py")),
         launch_arguments=[
             ("use_global_tf", "true"),
             ("robot_namespace", robot_name),
+            ("frame_prefix", frame_prefix),  # Multi-robot frame_prefix
         ],
     )
 

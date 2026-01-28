@@ -51,7 +51,7 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 1.0
+    transform_tolerance: 5.0  # Multi-robot: PC-로봇 시계 차이 허용 (2.0 → 5.0)
     update_min_a: 0.2
     update_min_d: 0.25
     z_hit: 0.5
@@ -146,9 +146,10 @@ local_costmap:
     ros__parameters:
       update_frequency: 5.0
       publish_frequency: 2.0
-      global_frame: odom
+      global_frame: robot_odom_frame  # Multi-robot: launch에서 frame_prefix 적용
       robot_base_frame: base_footprint
       use_sim_time: False
+      transform_tolerance: 2.0        # Multi-robot: 네트워크 지연 허용
       rolling_window: true
       width: 5                    # 4 → 5 (0.6 m/s 고속 주행 시야 확대)
       height: 5                   # 4 → 5
@@ -202,6 +203,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_footprint
       use_sim_time: False
+      transform_tolerance: 2.0        # Multi-robot: 네트워크 지연 허용
       robot_radius: 0.12          # Local과 일관성
       resolution: 0.05
       track_unknown_space: false  # 경로 생성 신뢰도
@@ -346,9 +348,9 @@ behavior_server:
       plugin: "nav2_behaviors/Wait"
     assisted_teleop:
       plugin: "nav2_behaviors/AssistedTeleop"
-    global_frame: odom
+    global_frame: robot_odom_frame  # Multi-robot: launch에서 frame_prefix 적용
     robot_base_frame: base_footprint
-    transform_tolerance: 0.1
+    transform_tolerance: 2.0          # Multi-robot: 네트워크 지연 허용 (0.1 → 1.0)
     use_sim_time: false
     simulate_ahead_time: 2.0
     # Ackermann 조향 특성 반영

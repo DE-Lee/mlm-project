@@ -29,11 +29,12 @@ def generate_launch_description():
     else: 
         lidar_launch_path = os.path.join(peripherals_package_path, 'launch/include/ms200_scan.launch.py')
     # Include Lidar launch file
+    # Multi-robot: lidar_frame으로 frame_id 전달 (ms200_scan.launch.py 인자명과 일치)
     lidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(lidar_launch_path),
         launch_arguments={
             'topic_name': LaunchConfiguration('scan_topic'),
-            'frame_id': LaunchConfiguration('lidar_frame')
+            'lidar_frame': LaunchConfiguration('lidar_frame')  # frame_id → lidar_frame 수정
         }.items()
     )
 

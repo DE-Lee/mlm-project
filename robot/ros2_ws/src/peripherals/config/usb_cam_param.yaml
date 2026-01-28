@@ -5,7 +5,6 @@
       io_method: "mmap"
       frame_id: "camera"
       pixel_format: "yuyv"
-      av_device_format: "YUV422P"
       image_width: 640
       image_height: 480
       camera_name: "usb_cam"

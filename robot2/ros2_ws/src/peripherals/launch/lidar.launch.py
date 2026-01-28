@@ -10,16 +10,15 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 def generate_launch_description():
     # init param
     compiled = os.environ.get("need_compile", "False")
-    lidar_type = os.environ.get("LIDAR_TYPE", "LD19")
+    lidar_type = os.environ.get("LIDAR_TYPE", "MS200")
     # Declare arguments
     lidar_frame = LaunchConfiguration('lidar_frame', default='lidar_frame')
     scan_raw = LaunchConfiguration('scan_raw', default='scan_raw')
-    # 기본 토픽을 scan_raw로 변경 (PC Navigation과 Web Dashboard 통일)
-    scan_topic = LaunchConfiguration('scan_topic', default='scan_raw')
+    scan_topic = LaunchConfiguration('scan_topic', default='scan')
 
     lidar_frame_arg = DeclareLaunchArgument('lidar_frame',default_value='lidar_frame',description='TF frame ID for the lidar')
     scan_raw_arg = DeclareLaunchArgument('scan_raw',default_value='scan_raw',description='Topic name for lidar_raw scan data')
-    scan_topic_arg = DeclareLaunchArgument('scan_topic',default_value='scan_raw',description='Topic name for lidar scan data (default: scan_raw)')
+    scan_topic_arg = DeclareLaunchArgument('scan_topic',default_value='scan',description='Topic name for lidar scan data')
 
     # Path to the launch file and package directory
     peripherals_package_path = get_package_share_directory('peripherals')
@@ -30,11 +29,12 @@ def generate_launch_description():
     else: 
         lidar_launch_path = os.path.join(peripherals_package_path, 'launch/include/ms200_scan.launch.py')
     # Include Lidar launch file
+    # Multi-robot: lidar_frame으로 frame_id 전달 (ms200_scan.launch.py 인자명과 일치)
     lidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(lidar_launch_path),
         launch_arguments={
             'topic_name': LaunchConfiguration('scan_topic'),
-            'frame_id': LaunchConfiguration('lidar_frame')
+            'lidar_frame': LaunchConfiguration('lidar_frame')  # frame_id → lidar_frame 수정
         }.items()
     )
 

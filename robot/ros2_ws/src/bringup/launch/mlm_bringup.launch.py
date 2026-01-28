@@ -9,11 +9,25 @@ from launch.actions import IncludeLaunchDescription, OpaqueFunction, LogInfo
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def launch_setup(context):
+    # CRITICAL: ROS_DOMAIN_ID 검증 (멀티로봇 통신 필수)
+    domain_id = os.environ.get('ROS_DOMAIN_ID', None)
+    if domain_id != '3':
+        raise RuntimeError(
+            f"❌ ERROR: ROS_DOMAIN_ID must be 3 for multi-robot system!\n"
+            f"   Current: {domain_id if domain_id else 'NOT SET'}\n"
+            f"   Fix: export ROS_DOMAIN_ID=3"
+        )
+
     compiled = os.environ.get("need_compile", "False")
     use_global_tf = LaunchConfiguration("use_global_tf").perform(context)
     robot_namespace = LaunchConfiguration("robot_namespace").perform(context)
+    frame_prefix = LaunchConfiguration("frame_prefix").perform(context)
 
-    print(f"[MLM_BRINGUP DEBUG] compiled={compiled}, use_global_tf={use_global_tf}, robot_namespace={robot_namespace}")
+    # Multi-robot: LiDAR frame_id에도 prefix 적용
+    # 예: frame_prefix="robot2/" → lidar_frame="robot2/lidar_frame"
+    lidar_frame = f"{frame_prefix}lidar_frame" if frame_prefix else "lidar_frame"
+
+    print(f"[MLM_BRINGUP DEBUG] compiled={compiled}, use_global_tf={use_global_tf}, robot_namespace={robot_namespace}, frame_prefix={frame_prefix}")
 
     if compiled == "True":
         controller_package_path = get_package_share_directory("controller")
@@ -36,6 +50,7 @@ def launch_setup(context):
         launch_arguments={
             "use_global_tf": use_global_tf,
             "robot_namespace": robot_namespace,
+            "frame_prefix": frame_prefix,  # Multi-robot frame_prefix
         }.items(),
     )
 
@@ -44,9 +59,13 @@ def launch_setup(context):
             os.path.join(peripherals_package_path, "launch/usb_cam.launch.py")),
     )
 
+    # Multi-robot: LiDAR frame_id에 prefix 적용
     lidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(peripherals_package_path, "launch/lidar.launch.py")),
+        launch_arguments={
+            "lidar_frame": lidar_frame,  # 예: robot2/lidar_frame
+        }.items(),
     )
 
     # rosbridge_websocket_launch = ExecuteProcess(
@@ -85,6 +104,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument("use_global_tf", default_value="false"),
         DeclareLaunchArgument("robot_namespace", default_value=""),
+        DeclareLaunchArgument("frame_prefix", default_value=""),  # Multi-robot frame_prefix
         OpaqueFunction(function=launch_setup)
     ])
 

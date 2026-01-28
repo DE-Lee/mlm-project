@@ -9,9 +9,10 @@ def launch_setup(context):
     compiled = os.environ.get("need_compile", "False")
     use_global_tf = LaunchConfiguration("use_global_tf").perform(context)
     namespace = LaunchConfiguration("namespace").perform(context)
+    frame_prefix = LaunchConfiguration("frame_prefix").perform(context)
 
     # DEBUG: Print values
-    print(f"[IMU_FILTER DEBUG] compiled={compiled}, use_global_tf={use_global_tf}, namespace={namespace}")
+    print(f"[IMU_FILTER DEBUG] compiled={compiled}, use_global_tf={use_global_tf}, namespace={namespace}, frame_prefix={frame_prefix}")
 
     if compiled == "True":
         calibration_package_path = get_package_share_directory("calibration")
@@ -49,6 +50,9 @@ def launch_setup(context):
         ]
     )
 
+    # Multi-robot: IMU frame_id에 frame_prefix 적용
+    imu_frame_id = f"{frame_prefix}imu_link" if frame_prefix else "imu_link"
+
     imu_filter_node = Node(
         package="imu_complementary_filter",
         executable="complementary_filter_node",
@@ -60,7 +64,8 @@ def launch_setup(context):
                 "use_mag": False,
                 "do_bias_estimation": True,
                 "do_adaptive_gain": True,
-                "publish_debug_topics": True
+                "publish_debug_topics": True,
+                "fixed_frame": imu_frame_id,  # Multi-robot: frame_prefix 적용
             }
         ],
         remappings=[
@@ -82,6 +87,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument("use_global_tf", default_value="false"),
         DeclareLaunchArgument("namespace", default_value=""),
+        DeclareLaunchArgument("frame_prefix", default_value=""),  # Multi-robot frame_prefix
         OpaqueFunction(function=launch_setup)
     ])
 
