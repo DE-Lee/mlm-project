@@ -7,7 +7,7 @@ MentorPi 로봇 기반 멀티로봇 학습 시스템 - Robot, PC Navigation, Web
 ```
 ┌─────────────────┐                 ┌─────────────────┐                 ┌─────────────┐
 │ Robot1          │  CycloneDDS     │       PC        │   rosbridge     │    Web      │
-│ (172.16.10.172) │◄──Peer-to-Peer─►│ (172.16.11.203) │◄───WebSocket───►│  Dashboard  │
+│ (172.16.10.172) │◄──Peer-to-Peer─►│ (172.16.11.222) │◄───WebSocket───►│  Dashboard  │
 ├─────────────────┤    Unicast      │                 │                 │             │
 │ Robot2          │◄──Peer-to-Peer─►│                 │                 │             │
 │ (172.16.10.37)  │                 └─────────────────┘                 └─────────────┘
@@ -23,7 +23,7 @@ MentorPi 로봇 기반 멀티로봇 학습 시스템 - Robot, PC Navigation, Web
 mlm_ws/
 ├── robot/          # Robot1 제어 패키지 (172.16.10.172)
 ├── robot2/         # Robot2 제어 패키지 (172.16.10.37)
-├── pc/             # Navigation 패키지 (PC - 172.16.11.203)
+├── pc/             # Navigation 패키지 (PC - 172.16.11.222)
 └── web/            # 웹 대시보드 (React + TypeScript)
 ```
 
@@ -35,7 +35,7 @@ mlm_ws/
 |------|-----|------|
 | Robot1 IP | `172.16.10.172` | MentorPi #1 |
 | Robot2 IP | `172.16.10.37` | MentorPi #2 |
-| PC IP | `172.16.11.203` | PC (Navigation 서버) |
+| PC IP | `172.16.11.222` | PC (Navigation 서버) |
 | WiFi | 동일 네트워크 | Robot, PC, Web 모두 같은 WiFi |
 | ROS_DOMAIN_ID | `3` | 모든 기기 동일하게 설정 |
 
@@ -96,7 +96,7 @@ ros2 launch bringup bringup_ns.launch.py robot_name:=robot2
 ### 3. PC 설정 (Multi-Robot Navigation)
 
 ```bash
-# PC (Ubuntu 22.04 - 172.16.11.203)
+# PC (Ubuntu 22.04 - 172.16.11.222)
 cd ~/mlm_ws/pc/ros2_ws
 colcon build --symlink-install
 source install/setup.bash
@@ -124,7 +124,7 @@ cd ~/mlm_ws/web
 
 # .env 파일 생성 및 PC IP 설정
 cp .env.example .env
-# VITE_ROS_BRIDGE_URL=ws://172.16.11.203:9090 확인
+# VITE_ROS_BRIDGE_URL=ws://172.16.11.222:9090 확인
 
 # 의존성 설치
 npm install
@@ -233,7 +233,7 @@ ip addr show | grep -E "^[0-9]+:" | awk -F: '{print $2}'
 # pc/cyclonedds/cyclonedds.xml에서 <NetworkInterface name="wlp0s20f3"/> 확인
 
 # 3. Ping 테스트
-ping 172.16.11.203  # Robot에서 PC로
+ping 172.16.11.222  # Robot에서 PC로
 ping 172.16.10.172  # PC에서 Robot1으로
 ping 172.16.10.37   # PC에서 Robot2로
 
@@ -252,7 +252,7 @@ ss -tuln | grep 9090
 
 # 3. .env 파일 확인
 cat ~/mlm_ws/web/.env
-# VITE_ROS_BRIDGE_URL=ws://172.16.11.203:9090 확인
+# VITE_ROS_BRIDGE_URL=ws://172.16.11.222:9090 확인
 
 # 4. 브라우저 콘솔 확인 (F12)
 ```
