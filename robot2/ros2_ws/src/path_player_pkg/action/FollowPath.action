@@ -1,0 +1,12 @@
+# Goal
+string path_name       # CSV 파일 이름
+bool reverse           # 전진(False) 또는 후진(True) 여부
+---
+# Result
+bool success           # 최종 목적지 도착 성공 여부
+string message         # 종료 사유 (성공/에러 메시지)
+---
+# Feedback
+float32 progress              # 진행률 (0.0 ~ 1.0)
+float32 distance_to_goal      # 최종 목적지까지의 남은 거리 (meters)
+int32 current_index           # 현재 추적 중인 CSV 행(Row) 인덱스

@@ -7,3 +7,5 @@ export { ConnectionStatus } from './ConnectionStatus';
 export { RobotPanel } from './RobotPanel';
 export { SetInitialPosePanel } from './SetInitialPosePanel';
 export { SetGoalPanel } from './SetGoalPanel';
+export { CameraView } from './CameraView';
+export { LidarView } from './LidarView';

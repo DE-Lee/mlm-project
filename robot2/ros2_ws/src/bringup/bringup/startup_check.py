@@ -9,7 +9,8 @@ from rclpy.node import Node
 class StartupCheckNode(Node):
     def __init__(self):
         super().__init__('startup_check_node')
-        self.buzzer_pub = self.create_publisher(BuzzerState, '/ros_robot_controller/set_buzzer', 1)
+        # Multi-robot: 상대경로 사용 (namespace 자동 적용)
+        self.buzzer_pub = self.create_publisher(BuzzerState, 'ros_robot_controller/set_buzzer', 1)
         self.timer = self.create_timer(5.0, self.publish_buzzer)
         self.get_logger().info('StartupCheckNode initialized') 
 

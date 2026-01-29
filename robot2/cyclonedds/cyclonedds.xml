@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Robot2 CycloneDDS Configuration -->
-<!-- IP: 172.16.10.173, ROS_DOMAIN_ID: 3 (Robot1과 통일) -->
+<!-- Robot1 CycloneDDS Configuration -->
+<!-- ROS_DOMAIN_ID: 3 -->
 <CycloneDDS xmlns="https://cdds.io/config">
-  <Domain id="3">  <!-- Robot1, PC와 동일한 Domain ID -->
+  <Domain id="3">
     <General>
       <!-- WiFi 인터페이스 지정 (유선이면 eth0, 무선이면 wlan0) -->
-      <!-- Robot2 네트워크 인터페이스에 맞게 수정 필요 -->
+      <!-- 로봇 네트워크 인터페이스에 맞게 수정 필요 -->
       <Interfaces>
         <NetworkInterface name="wlan0"/>
       </Interfaces>

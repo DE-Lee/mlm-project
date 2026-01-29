@@ -1,0 +1,25 @@
+# Camera Utils Parameters
+# 이미지 압축 노드 파라미터
+
+color_sender_node:
+  ros__parameters:
+    # Input topic (relative path - namespace support)
+    # 입력 토픽 (상대 경로 - 네임스페이스 지원)
+    # USB 카메라: image_raw (usb_cam 노드 출력)
+    input_topic: "image_raw"
+
+    # Output topic (relative path - namespace support)
+    # 출력 토픽 (상대 경로 - 네임스페이스 지원)
+    output_topic: "my_color_cam/image_compressed"
+
+    # JPEG compression quality (0-100, lower = smaller size)
+    # JPEG 압축 품질 (0-100, 낮을수록 용량 작음)
+    jpeg_quality: 50
+
+    # Frame skip (2 = send 1 of 2 frames, 30fps -> 15fps)
+    # 프레임 스킵 (2 = 2장 중 1장 전송, 30fps -> 15fps)
+    skip_frames: 2
+
+    # Resize scale (0.5 = half size, 1/4 area)
+    # 리사이즈 비율 (0.5 = 절반 크기, 면적 1/4)
+    resize_scale: 0.5

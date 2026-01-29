@@ -1,0 +1,10 @@
+motion_controller:
+  ros__parameters:
+    drive_type: "Ackermann"
+    angular_p_gain: 1.0
+    max_linear_velocity: 0.5
+    max_angular_velocity: 1.0  # Reduced to stay within ±40° steering limit
+    arrival_tolerance: 0.01
+    
+    distance_scale_factor: 1.00  # If 1m command results in 87cm, use 1.0/0.87 = 1.15
+    steering_offset_rad: 0.00   # Negative if drifts right, positive if drifts left

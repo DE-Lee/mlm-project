@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="parking_side_map">
+    <static>true</static>
+    <pose>0 0 0.005 0 0 0</pose>  <!-- Z축으로 5mm 띄움 -->
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>3.26 2.98 0.01</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://parking_side_map/meshes/parking_side_map.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- North Wall (Y+) -->
+      <collision name="wall_north_col">
+        <pose>0 1.49 0.2 0 0 0</pose>
+        <geometry><box><size>3.26 0.02 0.4</size></box></geometry>
+      </collision>
+      <visual name="wall_north_vis">
+        <pose>0 1.49 0.2 0 0 0</pose>
+        <geometry><box><size>3.26 0.02 0.4</size></box></geometry>
+        <material>
+          <ambient>0.3 0.3 0.3 1</ambient>
+          <diffuse>0.4 0.4 0.4 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- South Wall (Y-) -->
+      <collision name="wall_south_col">
+        <pose>0 -1.49 0.2 0 0 0</pose>
+        <geometry><box><size>3.26 0.02 0.4</size></box></geometry>
+      </collision>
+      <visual name="wall_south_vis">
+        <pose>0 -1.49 0.2 0 0 0</pose>
+        <geometry><box><size>3.26 0.02 0.4</size></box></geometry>
+        <material>
+          <ambient>0.3 0.3 0.3 1</ambient>
+          <diffuse>0.4 0.4 0.4 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- East Wall (X+) -->
+      <collision name="wall_east_col">
+        <pose>1.63 0 0.2 0 0 0</pose>
+        <geometry><box><size>0.02 2.98 0.4</size></box></geometry>
+      </collision>
+      <visual name="wall_east_vis">
+        <pose>1.63 0 0.2 0 0 0</pose>
+        <geometry><box><size>0.02 2.98 0.4</size></box></geometry>
+        <material>
+          <ambient>0.3 0.3 0.3 1</ambient>
+          <diffuse>0.4 0.4 0.4 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- West Wall (X-) -->
+      <collision name="wall_west_col">
+        <pose>-1.63 0 0.2 0 0 0</pose>
+        <geometry><box><size>0.02 2.98 0.4</size></box></geometry>
+      </collision>
+      <visual name="wall_west_vis">
+        <pose>-1.63 0 0.2 0 0 0</pose>
+        <geometry><box><size>0.02 2.98 0.4</size></box></geometry>
+        <material>
+          <ambient>0.3 0.3 0.3 1</ambient>
+          <diffuse>0.4 0.4 0.4 1</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

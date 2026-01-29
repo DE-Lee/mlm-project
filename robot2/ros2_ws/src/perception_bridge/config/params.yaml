@@ -1,0 +1,37 @@
+perception_bridge_node:
+  ros__parameters:
+    # 입력 토픽
+    detection_topic: "/detections"
+    lidar_topic: "/scan_raw"
+
+    # 출력 토픽
+    output_topic: "/perception/objects"
+    output_frame: "base_link"
+
+    # 객체 분류 매핑
+    # YOLO class_id -> object_class 매핑
+    # object_class: 1=장애물, 2=미션 객체
+    obstacle_class_ids: [0, 1, 2, 3]  # person, wheelchair, bed, etc.
+    mission_class_ids: [5]             # elevator_button, etc.
+
+    # 융합 파라미터
+    max_detection_range_m: 10.0
+    min_confidence: 0.5
+
+    # 카메라 intrinsic 파라미터 (픽셀 단위)
+    camera_fx: 554.0
+    camera_fy: 554.0
+    camera_cx: 320.0
+    camera_cy: 240.0
+    image_width: 640
+    image_height: 480
+
+    # 카메라 수평 FOV (라디안, intrinsic으로부터 계산 가능하지만 명시적으로 설정)
+    camera_hfov: 1.047  # 약 60도
+
+    # LiDAR-카메라 정렬 (카메라가 LiDAR 기준 어느 각도를 보는지)
+    # 0이면 카메라와 LiDAR가 같은 방향
+    camera_lidar_angle_offset: 0.0
+
+    # 디버깅
+    enable_visualization: false

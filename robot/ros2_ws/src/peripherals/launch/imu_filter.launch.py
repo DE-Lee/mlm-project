@@ -71,7 +71,9 @@ def launch_setup(context):
         remappings=[
             tf_remapping,
             ("/imu/data_raw", "imu_corrected"),
-            ("imu/data", "imu")
+            ("imu/data", "imu"),
+            ("/imu/steady_state", "imu/steady_state"),  # Multi-robot: 절대→상대 경로 변환
+            ("/imu/rpy/filtered", "imu/rpy/filtered"),  # Multi-robot: 절대→상대 경로 변환
         ]
     )
 

@@ -125,7 +125,7 @@ class Controller(Node):
         self.pose_pub = self.create_publisher(PoseWithCovarianceStamped, 'set_pose', 1)
         self.create_subscription(Pose2D, 'set_odom', self.set_odom, 1)
         self.create_subscription(Twist, 'controller/cmd_vel', self.cmd_vel_callback, 1)
-        self.create_subscription(Twist, '/app/cmd_vel', self.acker_cmd_vel_callback, 1)
+        self.create_subscription(Twist, 'app/cmd_vel', self.acker_cmd_vel_callback, 1)  # Multi-robot: 상대경로
         self.create_subscription(Twist, 'cmd_vel', self.app_cmd_vel_callback, 1)
         self.create_service(Trigger, 'controller/load_calibrate_param', self.load_calibrate_param)
         self.create_service(Trigger, '~/init_finish', self.get_node_state)

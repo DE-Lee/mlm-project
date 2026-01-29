@@ -5,6 +5,8 @@ import { RobotStatusPanel } from './RobotStatusPanel';
 import { ControlPanel } from './ControlPanel';
 import { SetInitialPosePanel } from './SetInitialPosePanel';
 import { SetGoalPanel } from './SetGoalPanel';
+import { CameraView } from './CameraView';
+import { LidarView } from './LidarView';
 
 interface RobotPanelProps {
   namespace: string;
@@ -72,11 +74,17 @@ export const RobotPanel = ({ namespace }: RobotPanelProps) => {
             <SetGoalPanel namespace={namespace} />
           </div>
 
-          {/* 로봇 상태 */}
-          <RobotStatusPanel namespace={namespace} />
+          {/* 센서 시각화: 카메라 + LiDAR */}
+          <div className="grid grid-cols-2 gap-3 h-[240px]">
+            <CameraView namespace={namespace} />
+            <LidarView namespace={namespace} />
+          </div>
 
-          {/* 수동 조작 */}
-          <ControlPanel namespace={namespace} />
+          {/* 상태 + 수동 조작 (수평 배치) */}
+          <div className="grid grid-cols-2 gap-3">
+            <RobotStatusPanel namespace={namespace} />
+            <ControlPanel namespace={namespace} />
+          </div>
         </div>
       )}
     </div>

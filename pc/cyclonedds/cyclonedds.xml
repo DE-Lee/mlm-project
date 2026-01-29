@@ -19,7 +19,7 @@
       <!-- Unicast Peers: 모든 로봇 IP -->
       <Peers>
         <Peer address="172.16.10.172"/>  <!-- Robot1 IP -->
-        <Peer address="172.16.10.37"/>   <!-- Robot2 IP -->
+        <Peer address="172.16.11.139"/>  <!-- Robot2 IP -->
         <Peer address="172.16.11.222"/>  <!-- PC IP (self) -->
       </Peers>
     </Discovery>

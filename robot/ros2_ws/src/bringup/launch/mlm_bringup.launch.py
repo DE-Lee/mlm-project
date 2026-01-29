@@ -33,10 +33,12 @@ def launch_setup(context):
         controller_package_path = get_package_share_directory("controller")
         peripherals_package_path = get_package_share_directory("peripherals")
         avoid_package_path = get_package_share_directory("mlm_avoid_bringup")
+        camera_utils_package_path = get_package_share_directory("camera_utils")
     else:
         controller_package_path = "/home/ubuntu/ros2_ws/src/driver/controller"
         peripherals_package_path = "/home/ubuntu/ros2_ws/src/peripherals"
         avoid_package_path = "/home/ubuntu/ros2_ws/src/mlm_avoid_bringup"
+        camera_utils_package_path = "/home/ubuntu/ros2_ws/src/camera_utils"
 
     startup_check_node = Node(
         package="bringup",
@@ -54,9 +56,13 @@ def launch_setup(context):
         }.items(),
     )
 
+    # Multi-robot: USB camera frame_id에 prefix 적용
     usb_cam_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(peripherals_package_path, "launch/usb_cam.launch.py")),
+        launch_arguments={
+            "frame_prefix": frame_prefix,  # 예: robot1/ → frame_id: robot1/camera
+        }.items(),
     )
 
     # Multi-robot: LiDAR frame_id에 prefix 적용
@@ -89,6 +95,13 @@ def launch_setup(context):
             os.path.join(avoid_package_path, "launch/avoid.launch.py")),
     )
 
+    # Web Dashboard용 카메라 이미지 압축 노드
+    # image_raw → my_color_cam/image_compressed (JPEG 압축, 리사이즈)
+    camera_utils_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(camera_utils_package_path, "launch/color_sender.launch.py")),
+    )
+
     return [
             LogInfo(msg=f"[MLM_BRINGUP] use_global_tf={use_global_tf}, robot_namespace={robot_namespace}"),
             startup_check_node,
@@ -98,6 +111,7 @@ def launch_setup(context):
             # rosbridge_websocket_launch,  # PC에서 실행
             init_pose_launch,
             avoid_launch,  # Emergency Stop (Nav2 자율주행용)
+            camera_utils_launch,  # Web Dashboard 카메라 압축
             ]
 
 def generate_launch_description():

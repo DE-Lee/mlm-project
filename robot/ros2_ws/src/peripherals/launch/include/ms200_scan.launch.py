@@ -32,7 +32,7 @@ def generate_launch_description():
             {'clockwise': False},
             {'motor_speed': 15}
         ],
-        remappings=[('MS200/scan', 'scan_raw')] 
+        remappings=[('MS200/scan', 'scan_raw')]
     )
 
 
